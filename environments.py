@@ -15,7 +15,10 @@ import jax
 from jax import numpy as jnp
 from jax import random
 import torch
-v = torch.ones(1, device='cuda')  # init torch cuda before jax
+# v = torch.ones(1, device='cuda')  # init torch cuda before jax
+v = torch.ones(1, device='cpu')  # init torch cuda before jax
+
+from builder import *
 
 
 seed = 42
@@ -107,19 +110,28 @@ def gen_vis(config):
     vis = html.Visualization(vis_config)
     return vis
 
-if __name__ == 'main':
+if __name__ == '__main__':
     config = create_config()
     env = create_environment(config)
     vis = gen_vis()
 
-    # Reset the environment
-    state = env.reset(rng=jax.random.PRNGKey(0))
+    spawner = Spawner()
+    spawner.spawn_objects(config, key, space_dim=(10,10), separation=2, obj_type="cube", method="poisson")
+
+
+    sys = brax.System(config)
+    qps = [sys.default_qp()]
+    act = jnp.array([0.0])
+
+    agent_velocity = 0.5
+    qps[-1].vel[1, 0] = agent_velocity
+
 
     # Run the environment loop
-    for i in range(500):
+    for i in range(50):
         print(i)
         action = jnp.array([jnp.sin(i / 10)])
-        set_action(env, action)
-        state = env.step(state, action)
-        vis.add_frame(env.physics)
-    vis.render()
+        qp, _ = sys.step(qps[-1], action)
+        qps.append(qp)
+
+    HTML(html.render(sys, qps))
