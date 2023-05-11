@@ -61,40 +61,40 @@ class WorldBuilder(Obj):
             transform(xml_dict)
         return xml_dict
 
-    # def get_sim(self):
-    #     self.placements = OrderedDict()
-    #     self.placements["top"] = {"origin": np.zeros(3),
-    #                               "size": self.world_params.size}
-    #     name_indexes = OrderedDict()
-    #     self.to_names(name_indexes)
-    #     res = self.compile(self.random_state, world_params=self.world_params)
-    #     if not res:
-    #         raise FullVirtualWorldException('Failed to compile world')
-    #     self.set_absolute_position((0, 0, 0))  # Recursively set all positions
-    #     xml_dict = self.to_xml_dict()
-    #     xinit_dict = self.to_xinit()
-    #     udd_callbacks = self.to_udd_callback()
-    #     xml = unparse_dict(xml_dict)
+    def get_sim(self):
+        self.placements = OrderedDict()
+        self.placements["top"] = {"origin": np.zeros(3),
+                                  "size": self.world_params.size}
+        name_indexes = OrderedDict()
+        self.to_names(name_indexes)
+        res = self.compile(self.random_state, world_params=self.world_params)
+        if not res:
+            raise FullVirtualWorldException('Failed to compile world')
+        self.set_absolute_position((0, 0, 0))  # Recursively set all positions
+        xml_dict = self.to_xml_dict()
+        xinit_dict = self.to_xinit()
+        udd_callbacks = self.to_udd_callback()
+        xml = unparse_dict(xml_dict)
 
-    #     model = load_model_from_xml(xml)
-    #     sim = MjSim(model, nsubsteps=self.world_params.num_substeps)
-    #     for name, value in xinit_dict.items():
-    #         sim.data.set_joint_qpos(name, value)
-    #     # Places mocap where related bodies are.
-    #     if sim.model.nmocap > 0 and sim.model.eq_data is not None:
-    #         for i in range(sim.model.eq_data.shape[0]):
-    #             if sim.model.eq_type[i] == const.EQ_WELD:
-    #                 sim.model.eq_data[i, :] = np.array(
-    #                     [0., 0., 0., 1., 0., 0., 0.])
-    #     udd_callbacks = (udd_callbacks or [])
-    #     if udd_callbacks is not None and len(udd_callbacks) > 0:
-    #         def merged_udd_callback(sim):
-    #             ret = {}
-    #             for udd_callback in udd_callbacks:
-    #                 ret.update(udd_callback(sim))
-    #             return ret
-    #         sim.udd_callback = merged_udd_callback
-    #     return sim
+        # model = load_model_from_xml(xml)
+        # sim = MjSim(model, nsubsteps=self.world_params.num_substeps)
+        # for name, value in xinit_dict.items():
+        #     sim.data.set_joint_qpos(name, value)
+        # # Places mocap where related bodies are.
+        # if sim.model.nmocap > 0 and sim.model.eq_data is not None:
+        #     for i in range(sim.model.eq_data.shape[0]):
+        #         if sim.model.eq_type[i] == const.EQ_WELD:
+        #             sim.model.eq_data[i, :] = np.array(
+        #                 [0., 0., 0., 1., 0., 0., 0.])
+        # udd_callbacks = (udd_callbacks or [])
+        # if udd_callbacks is not None and len(udd_callbacks) > 0:
+        #     def merged_udd_callback(sim):
+        #         ret = {}
+        #         for udd_callback in udd_callbacks:
+        #             ret.update(udd_callback(sim))
+        #         return ret
+        #     sim.udd_callback = merged_udd_callback
+        # return sim
 
     def get_xml(self):
         self.placements = OrderedDict()

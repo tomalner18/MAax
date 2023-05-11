@@ -37,7 +37,7 @@ class Agents(EnvModule):
             env.metadata.pop(f"agent{i}_initpos", None)
 
         for i in range(self.n_agents):
-            obj = ObjFromXML("particle_hinge", name=f"agent{i}")
+            obj = ObjFromXML("particle", name=f"agent{i}")
             if self.friction is not None:
                 obj.add_transform(set_geom_attr_transform('friction', self.friction))
             if self.color is not None:
