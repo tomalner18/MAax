@@ -1,5 +1,5 @@
 import gym
-from mujoco_py import MujocoException
+# from mujoco_py import MujocoException
 from gym.spaces import Dict, Box
 import numpy as np
 from copy import deepcopy
@@ -58,41 +58,41 @@ class DiscretizeActionWrapper(gym.ActionWrapper):
         return action
 
 
-class DiscardMujocoExceptionEpisodes(gym.Wrapper):
-    '''
-        Catches Mujoco Exceptions. Sends signal to discard Episode.
-    '''
-    def __init__(self, env):
-        super().__init__(env)
-        self.episode_error = False
+# class DiscardMujocoExceptionEpisodes(gym.Wrapper):
+#     '''
+#         Catches Mujoco Exceptions. Sends signal to discard Episode.
+#     '''
+#     def __init__(self, env):
+#         super().__init__(env)
+#         self.episode_error = False
 
-    def step(self, action):
-        assert not self.episode_error, "Won't Continue Episode After Mujoco Exception -- \
-            Please discard episode and reset. If info['discard_episode'] is True the episode\
-            should be discarded"
-        try:
-            obs, rew, done, info = self.env.step(action)
-            info['discard_episode'] = False
-        except MujocoException as e:
-            self.episode_error = True
-            # Done is set to False such that rollout workers do not accidently send data in
-            # the event that timelimit is up in the same step as an error occured.
-            obs, rew, done, info = {}, 0.0, False, {'discard_episode': True}
-            logging.info(str(e))
-            logging.info("Encountered Mujoco Exception During Environment Step.\
-                          Reset Episode Required")
+#     def step(self, action):
+#         assert not self.episode_error, "Won't Continue Episode After Mujoco Exception -- \
+#             Please discard episode and reset. If info['discard_episode'] is True the episode\
+#             should be discarded"
+#         try:
+#             obs, rew, done, info = self.env.step(action)
+#             info['discard_episode'] = False
+#         except MujocoException as e:
+#             self.episode_error = True
+#             # Done is set to False such that rollout workers do not accidently send data in
+#             # the event that timelimit is up in the same step as an error occured.
+#             obs, rew, done, info = {}, 0.0, False, {'discard_episode': True}
+#             logging.info(str(e))
+#             logging.info("Encountered Mujoco Exception During Environment Step.\
+#                           Reset Episode Required")
 
-        return obs, rew, done, info
+#         return obs, rew, done, info
 
-    def reset(self):
-        try:
-            obs = self.env.reset()
-        except MujocoException:
-            logging.info("Encountered Mujoco Exception During Environment Reset.\
-                          Trying Reset Again")
-            obs = self.reset()
-        self.episode_error = False
-        return obs
+#     def reset(self):
+#         try:
+#             obs = self.env.reset()
+#         except MujocoException:
+#             logging.info("Encountered Mujoco Exception During Environment Reset.\
+#                           Trying Reset Again")
+#             obs = self.reset()
+#         self.episode_error = False
+#         return obs
 
 
 class MaskActionWrapper(gym.Wrapper):

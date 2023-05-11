@@ -9,7 +9,20 @@ class Distributer:
     def __init__(self):
         self.d = 1
 
-    def random_unseparated(self, key, obj_cnt, obj_width, space_width, space_height,):
+    def distribute_boundaries(self, env_dim):
+        """Distribute boundaries in the scene."""
+        boundaries = []
+        # Create top wall
+        boundaries.append((0, env_dim[1] / 2))
+        # Create bottom wall
+        boundaries.append((0, -env_dim[1] / 2))
+        # Create left wall
+        boundaries.append((-env_dim[0] / 2, 0))
+        # Create right wall
+        boundaries.append((env_dim[0] / 2, 0))
+        return boundaries
+
+    def random_unseparated(self, key, obj_cnt, obj_width, width_range, height_range):
         """Generate random positions for objects.
 
         Args:
@@ -27,14 +40,14 @@ class Distributer:
         objects = []
         for i in range(obj_cnt):
             while True:
-                x = random.randint(0, space_width - obj_width)
-                y = random.randint(0, space_height - obj_width)
+                x = random.randint(width_range[0] + obj_width, width_range[1] - obj_width)
+                y = random.randint(height_range[0] + obj_width, height_range[1] - obj_width)
                 obj = (x, y, obj_width)
                 objects.append(obj)
         return objects
             
 
-    def random_separated(self, key, obj_cnt, obj_width, separation, space_width, space_height):
+    def random_separated(self, key, obj_cnt, obj_width, separation, width_range, height_range):
         """
         Generates up to n objects with a given separation and object size within a 2D space.
 
@@ -54,8 +67,8 @@ class Distributer:
         for i in range(obj_cnt):
             attempts = 0
             while attempts < attempt_threshold:
-                x = random.randint(0, space_width - obj_width)
-                y = random.randint(0, space_height - obj_width)
+                x = random.randint(0, width_range - obj_width)
+                y = random.randint(0, height_range - obj_width)
                 obj = (x, y, obj_width)
                 if not any(self.check_overlap(obj, other, separation) for other in objects):
                     objects.append(obj)
@@ -85,58 +98,76 @@ class Distributer:
         with any other objects.
         """
 
-        cell_size = r / math.sqrt(2)
-        grid_width = math.ceil((width_range[1] - width_range[0]) / cell_size)
-        grid_height = math.ceil((height_range[1] - height_range[0]) / cell_size)
-        grid = [None] * (grid_width * grid_height)
-        active_list = []
-        samples = []
-        
-        def get_cell(x, y):
-            if x < 0 or x >= grid_width or y < 0 or y >= grid_height:
-                return None
-            return grid[x + y * grid_width]
-        
-        def set_cell(x, y, sample):
-            grid[x + y * grid_width] = sample
-            active_list.append((x, y))
-        
-        def get_random_point_around(sample):
-            angle = random.uniform(0, 2 * math.pi)
-            distance = random.uniform(r, 2 * r)
-            x = sample[0] + distance * math.cos(angle)
-            y = sample[1] + distance * math.sin(angle)
-            return (x, y)
-        
-        def is_valid_sample(sample):
-            x, y = sample
-            if x < width_range[0] or x > width_range[1] or y < height_range[0] or y > height_range[1]:
-                return False
-            cell_x = int((x - width_range[0]) / cell_size)
-            cell_y = int((y - height_range[0]) / cell_size)
-            for i in range(cell_x - 2, cell_x + 3):
-                for j in range(cell_y - 2, cell_y + 3):
-                    if i >= 0 and i < grid_width and j >= 0 and j < grid_height:
-                        cell = get_cell(i, j)
-                        if cell is not None and math.sqrt((cell[0] - x)**2 + (cell[1] - y)**2) < r:
-                            return False
-            return True
-        
-        x = random.uniform(width_range[0], width_range[1])
-        y = random.uniform(height_range[0], height_range[1])
-        samples.append((x, y))
-        set_cell(int((x - width_range[0]) / cell_size), int((y - height_range[0]) / cell_size), (x, y))
-        
-        while active_list:
-            index = random.randint(0, len(active_list) - 1)
-            sample = active_list[index]
-            for i in range(30):
-                new_sample = get_random_point_around(sample)
-                if is_valid_sample(new_sample):
-                    samples.append(new_sample)
-                    set_cell(int((new_sample[0] - width_range[0]) / cell_size), int((new_sample[1] - height_range[0]) / cell_size), new_sample)
-                    break
-            else:
-                active_list.pop(index)
-        
-        return samples
+        # Calculate the cell size based on the minimum separation
+        cell_size = (r + max_width) / math.sqrt(2)
+        min_separation = r + max_width
+
+        spawn_width = (width_range[0] + max_width, width_range[1] - max_width)
+        spawn_height = (height_range[0] + max_width, height_range[1] - max_width)
+
+        # Calculate the number of rows and columns in the grid
+        num_rows = math.ceil((spawn_width[1] - spawn_width[0]) / cell_size)
+        num_cols = math.ceil((spawn_height[1] - spawn_height[0]) / cell_size)
+
+        # Create the grid
+        grid = [[None] * num_cols for i in range(num_rows)]
+
+        # Create a list to hold the active points
+        active_points = []
+
+        # Choose a random starting point and add it to the grid and the active points list
+        x = random.uniform(spawn_width[0], spawn_width[1])
+        y = random.uniform(spawn_height[0], spawn_height[1])
+        grid_row = math.floor((y - spawn_height[0]) / cell_size)
+        grid_col = math.floor((x - spawn_width[0]) / cell_size)
+        grid[grid_row][grid_col] = (x, y)
+        active_points.append((x, y))
+
+        # Loop through the active points list until it is empty
+        while len(active_points) > 0:
+            # Choose a random active point
+            current_point = random.choice(active_points)
+
+            # Generate up to k points uniformly distributed between radius r and 2r from the current point
+            k = 30
+            found_new_point = False
+            for i in range(k):
+                angle = random.uniform(0, 2 * math.pi)
+                radius = random.uniform(r, 2 * r)
+                new_x = current_point[0] + radius * math.cos(angle)
+                new_y = current_point[1] + radius * math.sin(angle)
+
+                # Check if the new point is within the bounds of the sampling area
+                if new_x >= spawn_width[0] and new_x <= spawn_width[1] and new_y >= spawn_height[0] and new_y <= spawn_height[1]:
+                    # Check if the new point is too close to an existing point
+                    grid_row = math.floor((new_y - spawn_height[0]) / cell_size)
+                    grid_col = math.floor((new_x - spawn_width[0]) / cell_size)
+                    if grid[grid_row][grid_col] is None:
+                        is_valid = True
+                        for row in range(max(0, grid_row - 2), min(num_rows, grid_row + 3)):
+                            for col in range(max(0, grid_col - 2), min(num_cols, grid_col + 3)):
+                                neighbor = grid[row][col]
+                                if neighbor is not None:
+                                    distance = math.sqrt((new_x - neighbor[0]) ** 2 + (new_y - neighbor[1]) ** 2)
+                                    if distance < r:
+                                        is_valid = False
+                                        break
+                            if not is_valid:
+                                break
+                        if is_valid:
+                            grid[grid_row][grid_col] = (new_x, new_y)
+                            active_points.append((new_x, new_y))
+                            found_new_point = True
+                            break
+
+            # If no new point was found, remove the current point from the active points list
+            if not found_new_point:
+                active_points.remove(current_point)
+
+        # Extract the points from the grid and return them
+        points = []
+        for row in range(num_rows):
+            for col in range(num_cols):
+                if grid[row][col] is not None:
+                    points.append(grid[row][col])
+        return points

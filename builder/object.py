@@ -8,9 +8,11 @@ class Object:
         self.scale = scale
         self.name = ""
 
-        def spawn_width(self):
+    def spawn_width(self):
             pass
-
+        
+    def set_scale(self, scale):
+            self.scale = scale
     
 class Box(Object):
     """A 6-sided rectangular prism."""
@@ -22,6 +24,9 @@ class Box(Object):
 
     def spawn_width(self):
         return max(self.half_size[0], self.half_size[1])
+
+    def set_half_size(self, half_size):
+        self.half_size = half_size
 
 class Sphere(Object):
     """A sphere."""

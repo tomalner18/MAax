@@ -48,7 +48,7 @@ class Boxes(EnvModule):
 
         env.metadata['curr_n_boxes'] = np.zeros((self.n_boxes[1]))
         env.metadata['curr_n_boxes'][:self.curr_n_boxes] = 1
-        env.metadata['curr_n_boxes'] = env.metadata['curr_n_boxes'].astype(np.bool)
+        env.metadata['curr_n_boxes'] = env.metadata['curr_n_boxes'].astype(bool)
 
         self.curr_n_elongated_boxes = env._random_state.randint(
             self.n_elongated_boxes[0], min(self.n_elongated_boxes[1], self.curr_n_boxes) + 1)
@@ -156,7 +156,7 @@ class Ramps(EnvModule):
     def build_world_step(self, env, floor, floor_size):
         successful_placement = True
 
-        env.metadata['curr_n_ramps'] = np.ones((self.n_ramps)).astype(np.bool)
+        env.metadata['curr_n_ramps'] = np.ones((self.n_ramps)).astype(bool)
 
         for i in range(self.n_ramps):
             char = chr(ord('A') + i % 26)

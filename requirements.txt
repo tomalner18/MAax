@@ -4,5 +4,4 @@ xmltodict==0.12.0
 gym==0.10.8
 jsonnet==0.11.2
 numpy-stl==2.10.1
-mujoco-py<1.50.2,>=1.50.1
-brax
+# mujoco-py<1.50.2,>=1.50.1
