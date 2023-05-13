@@ -6,7 +6,6 @@ from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions,
                                            SplitObservations, SelectKeysWrapper)
 from mae_envs.wrappers.util import (DiscretizeActionWrapper, ConcatenateObsWrapper,
                                     MaskActionWrapper, SpoofEntityWrapper,
-                                    DiscardMujocoExceptionEpisodes,
                                     AddConstantObservationsWrapper)
 from mae_envs.wrappers.manipulation import (GrabObjWrapper, GrabClosestWrapper,
                                             LockObjWrapper, LockAllWrapper)

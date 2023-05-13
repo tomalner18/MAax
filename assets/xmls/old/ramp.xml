@@ -11,7 +11,7 @@
 			<joint type="free"/>
 			<joint axis="1 0 0" damping="0.1" name="tx" pos="0.0 0.0 0.0" type="slide"></joint>
 			<joint axis="0 1 0" damping="0.1" name="ty" pos="0.0 0.0 0.0" type="slide"></joint>
-			<!-- <joint axis="0 0 1" damping="0.1" name="tz" pos="0.0 0.0 0.0" type="slide"></joint> -->
+			<joint axis="0 0 1" damping="0.1" name="tz" pos="0.0 0.0 0.0" type="slide"></joint>
 			<joint axis="0 0 1" damping="0.1" name="rz" pos="0.0 0.0 0.0" type="hinge"></joint>
 		</body>
 		<body name="annotation:outer_bound" pos="0.25 0.25 0.25">

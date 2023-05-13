@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_py import functions
+# from mujoco_py import functions
 from ctypes import c_int, addressof
 from math import sqrt
 
@@ -37,13 +37,13 @@ def raycast(sim, geom1_id=None, geom2_id=None, pt1=None, pt2=None, geom_group=No
 
     # Setup int array
     c_arr = (c_int*1)(0)
-    dist = functions.mj_ray(sim.model,
-                            sim.data,
-                            pt1,
-                            ray_direction,
-                            geom_group,
-                            np.array([[0]]).astype(np.uint8),  # flg_static. TODO idk what this is
-                            body1,  # Bodyid to exclude
-                            addressof(c_arr))
-    collision_geom = c_arr[0] if c_arr[0] != -1 else None
-    return dist, collision_geom
+    # dist = functions.mj_ray(sim.model,
+    #                         sim.data,
+    #                         pt1,
+    #                         ray_direction,
+    #                         geom_group,
+    #                         np.array([[0]]).astype(np.uint8),  # flg_static. TODO idk what this is
+    #                         body1,  # Bodyid to exclude
+    #                         addressof(c_arr))
+    # collision_geom = c_arr[0] if c_arr[0] != -1 else None
+    # return dist, collision_geom

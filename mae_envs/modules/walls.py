@@ -1,6 +1,7 @@
 import numpy as np
 from mujoco_worldgen.util.types import store_args
 from mujoco_worldgen import Geom
+from mujoco_worldgen.objs.fixed import Fixed
 from mujoco_worldgen.transforms import set_geom_attr_transform
 from mae_envs.modules import EnvModule
 
@@ -275,7 +276,8 @@ def walls_to_mujoco(floor, floor_size, grid_size, walls, friction=None):
         scale_y = (floor_size - size[1]) / floor_size
         pos = pos / np.array([scale_x, scale_y])
         geom = Geom('box', size, name=f"wall{i}")
-        geom.mark_static()
+        # geom.mark_static()
+        geom.mark_unhinged()
         geom.add_transform(set_geom_attr_transform('rgba', wall.rgba))
         geom.add_transform(set_geom_attr_transform('group', 1))
         if friction is not None:
@@ -284,7 +286,7 @@ def walls_to_mujoco(floor, floor_size, grid_size, walls, friction=None):
 
 
 def outside_walls(grid_size, rgba=(0, 1, 0, 0.1), use_low_wall_height=False):
-    height = 0.5 if use_low_wall_height else 4.0
+    height = 0.5 if use_low_wall_height else 3.0
     return [Wall([0, 0], [0, grid_size - 1], height=height, rgba=rgba),
             Wall([0, 0], [grid_size - 1, 0], height=height, rgba=rgba),
             Wall([grid_size - 1, 0], [grid_size - 1, grid_size - 1], height=height, rgba=rgba),

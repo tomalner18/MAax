@@ -114,6 +114,16 @@ class Obj(object):
         self._keep_slide_joint = [keep_slide0, keep_slide1, keep_slide2]
         self._keep_hinge_joint = [keep_hinge0, keep_hinge1, keep_hinge2]
 
+    def mark_unhinged(self,
+                    keep_slide0=True,
+                    keep_slide1=True,
+                    keep_slide2=False,
+                    keep_hinge0=False,
+                    keep_hinge1=False,
+                    keep_hinge2=False):
+        self._keep_slide_joint = [keep_slide0, keep_slide1, keep_slide2]
+        self._keep_hinge_joint = [keep_hinge0, keep_hinge1, keep_hinge2]
+
     # ##################################################################
     # ########################## First Phase ###########################
     # ##################################################################

@@ -1,0 +1,10 @@
+<mujoco>
+    <option timestep="0.005"/>
+    <worldbody>
+    <body pos="0 0 3">
+        <joint type="free"/>
+        <geom size="0.5" type="sphere"/>
+    </body>
+    <geom size="40 40 40" type="plane"/>
+    </worldbody>
+</mujoco>

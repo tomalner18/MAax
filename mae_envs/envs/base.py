@@ -3,7 +3,7 @@ import logging
 from mujoco_worldgen import Floor, WorldBuilder, WorldParams, Env
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions, SplitObservations,
                                            SelectKeysWrapper)
-from mae_envs.wrappers.util import DiscretizeActionWrapper, DiscardMujocoExceptionEpisodes
+from mae_envs.wrappers.util import DiscretizeActionWrapper
 from mae_envs.wrappers.line_of_sight import AgentAgentObsMask2D
 from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls
@@ -118,5 +118,5 @@ def make_env(n_substeps=5, horizon=250, deterministic_mode=False, n_agents=2,
     env = SplitObservations(env, keys_self + keys_mask_self)
     env = SelectKeysWrapper(env, keys_self=keys_self,
                             keys_other=keys_external + keys_mask_self + keys_mask_external)
-    env = DiscardMujocoExceptionEpisodes(env)
+    # env = DiscardMujocoExceptionEpisodes(env)
     return env
