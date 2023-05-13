@@ -96,7 +96,7 @@ def recursive_rename(xml_dict, prefix):
                 for attr in list(value.keys()):
                     if attr in attrs:
                         if not value[attr].startswith(prefix + ':'):
-                            value[attr] = prefix + ':' + value[attr]
+                            value[attr] = prefix + '_' + value[attr]
         if isinstance(value_dict, list):
             for value in value_dict:
                 recursive_rename(value, prefix)

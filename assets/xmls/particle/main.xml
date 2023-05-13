@@ -2,10 +2,10 @@
 <mujoco>
 	<option timestep="0.005"/>
 	<worldbody>
-		<body name="particle" pos="0.15 0.15 0.15">
-			<joint axis="1 0 0" damping="0.1" name="agentx" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.1" name="agenty" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.1" name="agentz" pos="0 0 0" type="slide"></joint>
+		<body pos="0.15 0.15 0.15">
+			<joint axis="1 0 0" damping="0.1" name="tx" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="ty" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="tz" pos="0 0 0" type="slide"></joint>
 			<geom name="agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0"></geom>
 		</body>
 		<body name="annotation:outer_bound" pos="0.15 0.15 0.15">
@@ -13,7 +13,7 @@
 		</body>
 	</worldbody>
 	<actuator>
-		<motor gear="100" joint="agentx"></motor>
-		<motor gear="100" joint="agenty"></motor>
+		<motor gear="100" joint="tx"></motor>
+		<motor gear="100" joint="ty"></motor>
 	</actuator>
 </mujoco>

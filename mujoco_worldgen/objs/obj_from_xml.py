@@ -68,13 +68,12 @@ class ObjFromXML(Obj):
 
         for body in self.xml["worldbody"]["body"]:
             name = body.get('@name', '')
-            print("Name: ", name)
             if not name.startswith("annotation:"):  # Not an annotation, must be a main body
                 if self.name is not None:
                     body_name = self.name
                     if name:
                         body_name += ":" + name
-                    body['@name'] = name
+                    body['@name'] = body_name
                     body["@pos"] = body["@pos"]
                 bodies.append(body)
         self.xml['worldbody']['body'] = bodies
