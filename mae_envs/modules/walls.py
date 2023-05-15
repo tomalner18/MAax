@@ -14,8 +14,9 @@ class Wall:
             pt1, pt2 (float tuple): points defining the wall
             height (float): wall height
             rgba (float tuple): wall rgba
+            mass (float): wall mass
     '''
-    def __init__(self, pt1, pt2, height=0.5, rgba=(0, 1, 0, 1)):
+    def __init__(self, pt1, pt2, height=0.5, rgba=(0, 1, 0, 1), mass=1000000):
         assert pt1[0] == pt2[0] or pt1[1] == pt2[1], (
             "Currently only horizontal and vertical walls are supported")
         self.is_vertical = pt1[0] == pt2[0]
@@ -29,6 +30,7 @@ class Wall:
         self.length = int(np.linalg.norm(np.array(pt1) - np.array(pt2)))
         self.height = height
         self.rgba = rgba
+        self.mass = mass
         # Variables defining where other walls split from this wall on the left and right.
         # For horizontal walls, left means below, right means above
         self.left_edges = [self.pt1, self.pt2]
@@ -280,6 +282,7 @@ def walls_to_mujoco(floor, floor_size, grid_size, walls, friction=None):
         geom.mark_unhinged()
         geom.add_transform(set_geom_attr_transform('rgba', wall.rgba))
         geom.add_transform(set_geom_attr_transform('group', 1))
+        geom.add_transform(set_geom_attr_transform('mass', wall.mass))
         if friction is not None:
             geom.add_transform(set_geom_attr_transform('friction', friction))
         floor.append(geom, placement_xy=pos)
