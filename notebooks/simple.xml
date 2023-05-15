@@ -27,20 +27,25 @@
 			<joint name="wall3:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall3" rgba="0 1 0 0.1" group="1" friction="0.01"></geom>
 		</body>
-		<body name="wall4" pos="0.05 1.15 0.25">
+		<body name="wall4" pos="0.05 1.05 0.25">
 			<joint name="wall4:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall4:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 1.15 0.25" type="box" condim="3" name="wall4" rgba="0 1 0 1" group="1" friction="0.01"></geom>
+			<geom size="0.05 1.05 0.25" type="box" condim="3" name="wall4" rgba="0 1 0 1" group="1" friction="0.01"></geom>
 		</body>
-		<body name="wall5" pos="0.75 0.05 0.25">
+		<body name="wall5" pos="0.05 0.05 0.25">
 			<joint name="wall5:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall5:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.75 0.05 0.25" type="box" condim="3" name="wall5" rgba="0 1 0 1" group="1" friction="0.01"></geom>
+			<geom size="0.05 0.05 0.25" type="box" condim="3" name="wall5" rgba="0 1 0 1" group="1" friction="0.01"></geom>
 		</body>
-		<body name="wall6" pos="0.25 0.05 0.25">
+		<body name="wall6" pos="0.05 0.05 0.25">
 			<joint name="wall6:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall6:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.05 0.25" type="box" condim="3" name="wall6" rgba="0 1 0 1" group="1" friction="0.01"></geom>
+			<geom size="0.05 0.05 0.25" type="box" condim="3" name="wall6" rgba="0 1 0 1" group="1" friction="0.01"></geom>
+		</body>
+		<body name="wall7" pos="0.95 0.05 0.25">
+			<joint name="wall7:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall7:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<geom size="0.95 0.05 0.25" type="box" condim="3" name="wall7" rgba="0 1 0 1" group="1" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent0_agent0">
 			<joint axis="1 0 0" damping="0.1" name="agent0_tx" pos="0 0 0" type="slide"></joint>
@@ -54,6 +59,18 @@
 			<joint axis="0 0 1" damping="1" name="agent1_tz" pos="0 0 0" type="slide"></joint>
 			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
+		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
+			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" material="material0" friction="0.01"></geom>
+			<joint axis="1 0 0" damping="0.1" name="ramp0_tx" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="ramp0_ty" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="ramp0_tz" pos="0 0 0" type="slide"></joint>
+		</body>
+		<body pos="0.25 0.25 0.25" name="ramp1_ramp1">
+			<geom name="ramp1_ramp" pos="0 0 0" type="mesh" mesh="ramp1_ramp" mass="1" material="material1" friction="0.01"></geom>
+			<joint axis="1 0 0" damping="0.1" name="ramp1_tx" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="ramp1_ty" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="ramp1_tz" pos="0 0 0" type="slide"></joint>
+		</body>
 	</worldbody>
 	<actuator>
 		<motor gear="100" joint="agent0_tx"></motor>
@@ -61,4 +78,14 @@
 		<motor gear="100" joint="agent1_tx"></motor>
 		<motor gear="100" joint="agent1_ty"></motor>
 	</actuator>
+	<asset>
+		<mesh file="ramp.stl" name="ramp0_ramp" scale="0.5 0.5 0.5"></mesh>
+		<mesh file="ramp.stl" name="ramp1_ramp" scale="0.5 0.5 0.5"></mesh>
+		<material name="ramp0_rampmat" specular="1" shininess="0.3" reflectance="0" rgba="0 0.5 1 1"></material>
+		<material name="material0" texture="texture_material0"></material>
+		<material name="ramp1_rampmat" specular="1" shininess="0.3" reflectance="0" rgba="0 0.5 1 1"></material>
+		<material name="material1" texture="texture_material1"></material>
+		<texture name="texture_material0" type="cube" builtin="none" file="chars/A.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+		<texture name="texture_material1" type="cube" builtin="none" file="chars/B.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+	</asset>
 </mujoco>

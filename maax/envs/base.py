@@ -29,7 +29,7 @@ class Base(BEnv):
     '''
     def __init__(self, horizon=250, n_substeps=5, n_agents=2,
                  floor_size=6., grid_size=30,
-                 action_lims=(-1.0, 1.0), deterministic_mode=False,
+                 action_lims=(-1.0, 1.0), deterministic_mode=False, seed=1,
                  **kwargs):
         self.n_agents = n_agents
         self.metadata = {}
@@ -46,7 +46,7 @@ class Base(BEnv):
         self.modules = []
 
         # Required as mujoco_worldgen
-        self._random_state = np.random.RandomState(1)
+        self._random_state = np.random.RandomState(seed)
 
     def add_module(self, module):
         self.modules.append(module)
