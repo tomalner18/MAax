@@ -65,8 +65,8 @@ class Boxes(EnvModule):
         successful_placement = True
         for i in range(self.curr_n_boxes):
             char = chr(ord('A') + i % 26)
-            geom = Geom("box", self.box_size_array[i, :], name=f'moveable_box{i}', free=self.free)
-            geom.set_material(Material(texture="chars/" + char + ".png"))
+            geom = Geom("box", self.box_size_array[i, :], name=f'moveable_box{i}', free=self.free, rgba=[1.0, 0.5, 0.8, 1.0])
+            # geom.set_material(Material(texture="chars/" + char + ".png"))
             geom.add_transform(set_geom_attr_transform('mass', self.box_mass))
             if self.mark_box_corners:
                 for j, (x, y) in enumerate([[0, 0], [0, 1], [1, 0], [1, 1]]):
