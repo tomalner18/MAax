@@ -1,6 +1,10 @@
 import brax
 from brax.envs import Env as BEnv
+# Import
+from brax import base
 from brax.envs import State
+from brax.envs.env import PipelineEnv
+# Import PipelineEnv
 
 import numpy as np
 import logging
@@ -13,7 +17,7 @@ from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls
 from mae_envs.modules.objects import Boxes, Ramps
 
-class Base(BEnv):
+class Base(PipelineEnv):
     '''
         Multi-agent Base Environment.
         Args:
@@ -27,10 +31,18 @@ class Base(BEnv):
             action_lims (float tuple): lower and upper limit of mujoco actions
             deterministic_mode (bool): if True, seeds are incremented rather than randomly sampled.
     '''
-    def __init__(self, horizon=250, n_substeps=5, n_agents=2,
-                 floor_size=6., grid_size=30,
-                 action_lims=(-1.0, 1.0), deterministic_mode=False, seed=1,
-                 **kwargs):
+    def __init__(
+        self, 
+        horizon=250, 
+        n_substeps=5, 
+        n_agents=2, 
+        floor_size=6., 
+        grid_size=30,
+        action_lims=(-1.0, 1.0), 
+        deterministic_mode=False, 
+        seed=1,
+        backend='generalized',
+        **kwargs):
         self.n_agents = n_agents
         self.metadata = {}
         self.metadata['n_actors'] = n_agents
@@ -93,6 +105,35 @@ class Base(BEnv):
 
     def step(self, state: State, action: jp.ndarray) -> State:
         """Run one timestep of the environment's dynamics."""
+
+
+        reward = self.get_reward(self.sim)
+        if not isinstance(reward, float):
+            raise TypeError("The return value of get_reward must be a float")
+
+        obs = self.get_obs(self.sim)
+        diverged, divergence_reward = self.get_diverged(self.sim)
+
+        if not isinstance(diverged, bool):
+            raise TypeError(
+                "The first return value of get_diverged must be boolean")
+        if not isinstance(divergence_reward, float):
+            raise TypeError(
+                "The second return value of get_diverged must be float")
+
+        if diverged:
+            done = True
+            if divergence_reward is not None:
+                reward = divergence_reward
+        elif self.horizon is not None:
+            done = (self.t >= self.horizon)
+        else:
+            done = False
+
+        info = self.get_info(self.sim)
+        info["diverged"] = divergence_reward
+        # Return value as required by Gym
+        return obs, reward, done, info
 
     @property
     def observation_size(self) -> int:

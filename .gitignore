@@ -148,4 +148,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+#OS
+.DS_Store
+
 maaxenv/

@@ -359,7 +359,7 @@ class RandomWalls(EnvModule):
         add_walls_to_grid(env.placement_grid, walls)
         return True
 
-    def observation_step(self, env, sim):
+    def observation_step(self, env, state):
         if self.gen_door_obs:
             obs = {'door_obs': self.door_obs}
         else:
@@ -488,7 +488,7 @@ class WallScenarios(EnvModule):
         add_walls_to_grid(env.placement_grid, walls)
         return True
 
-    def observation_step(self, env, sim):
+    def observation_step(self, env, state):
         if self.door_obs is not None:
             obs = {'door_obs': self.door_obs}
         else:

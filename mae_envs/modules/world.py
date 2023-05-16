@@ -23,7 +23,7 @@ class WorldConstants(EnvModule):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def modify_sim_step(self, env, sim):
+    def modify_sim_step(self, env, state):
         for k, v in self.kwargs.items():
             if not hasattr(sim.model.opt, k):
                 logging.warning(f"sim.model.opt does not have attribute {k}")

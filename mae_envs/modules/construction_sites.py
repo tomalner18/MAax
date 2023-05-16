@@ -84,7 +84,7 @@ class ConstructionSites(EnvModule):
 
         return successful_placement
 
-    def modify_sim_step(self, env, sim):
+    def modify_state_step(self, env, state):
         self.construction_site_idxs = np.array(
             [sim.model.site_name2id(f'{self.site_name}{i}')
              for i in range(self.curr_n_sites)]
@@ -94,7 +94,7 @@ class ConstructionSites(EnvModule):
              for i in range(self.curr_n_sites) for j in range(4)]
             )
 
-    def observation_step(self, env, sim):
+    def observation_step(self, env, state):
         site_pos = sim.data.site_xpos[self.construction_site_idxs]
         site_corner_pos = sim.data.site_xpos[self.construction_site_corner_idxs]
         site_obs = np.concatenate((site_pos,

@@ -109,5 +109,5 @@ class AgentManipulation(EnvModule):
                 f'agent{i}:gripper', f'agent{i}:particle', 'floor0'))
         return True
 
-    def modify_sim_step(self, env, sim):
+    def modify_state_step(self, env, state):
         sim.model.eq_active[:] = 0

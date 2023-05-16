@@ -6,6 +6,9 @@
 import numpy as np
 import itertools
 
+import jax
+import jax.numpy as jp
+
 '''
 Rotations
 =========
@@ -361,8 +364,8 @@ def normalize_angles(angles):
     '''Puts angles in [-pi, pi] range.'''
     angles = angles.copy()
     if angles.size > 0:
-        angles = (angles + np.pi) % (2 * np.pi) - np.pi
-        assert -(np.pi + 1e-6) <= angles.min() and angles.max() <= (np.pi + 1e-6)
+        angles = (angles + jp.pi) % (2 * jp.pi) - jp.pi
+        assert -(jp.pi + 1e-6) <= angles.min() and angles.max() <= (jp.pi + 1e-6)
     return angles
 
 

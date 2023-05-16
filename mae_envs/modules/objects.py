@@ -8,6 +8,9 @@ from mujoco_worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import remove_hinge_axis_transform
 from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
 
+import jax
+from jax import numpy as jp
+
 
 class Boxes(EnvModule):
     '''
@@ -36,7 +39,7 @@ class Boxes(EnvModule):
     @store_args
     def __init__(self, n_boxes, n_elongated_boxes=0, placement_fn=None,
                  box_size=0.5, box_mass=1.0, friction=None, box_only_z_rot=False,
-                 boxid_obs=True, boxsize_obs=False, polar_obs=True, mark_box_corners=False, free=False):
+                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=False):
         if type(n_boxes) not in [tuple, list, np.ndarray]:
             self.n_boxes = [n_boxes, n_boxes]
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
@@ -68,10 +71,6 @@ class Boxes(EnvModule):
             geom = Geom("box", self.box_size_array[i, :], name=f'moveable_box{i}', free=self.free, rgba=[1.0, 0.5, 0.8, 1.0])
             # geom.set_material(Material(texture="chars/" + char + ".png"))
             geom.add_transform(set_geom_attr_transform('mass', self.box_mass))
-            if self.mark_box_corners:
-                for j, (x, y) in enumerate([[0, 0], [0, 1], [1, 0], [1, 1]]):
-                    geom.mark(f'moveable_box{i}_corner{j}', relative_xyz=(x, y, 0.5),
-                              rgba=[1., 1., 1., 0.])
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))
             # if self.box_only_z_rot:
@@ -95,10 +94,8 @@ class Boxes(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def modify_sim_step(self, env, sim):
+    def modify_state_step(self, env, state):
         # Cache qpos, qvel idxs
-        self.box_geom_idxs = np.array([sim.model.geom_name2id(f'moveable_box{i}')
-                                       for i in range(self.curr_n_boxes)])
         self.box_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'moveable_box{i}:')
                                        for i in range(self.curr_n_boxes)])
         self.box_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'moveable_box{i}:')
@@ -108,34 +105,30 @@ class Boxes(EnvModule):
                                              for i in range(self.curr_n_boxes)
                                              for j in range(4)])
 
-    def observation_step(self, env, sim):
-        qpos = sim.data.qpos.copy()
-        qvel = sim.data.qvel.copy()
+    def observation_step(self, env, state):
+        qpos = state.q.copy()
+        qvel = state.qd.copy()
 
-        box_inds = np.expand_dims(np.arange(self.curr_n_boxes), -1)
-        box_geom_idxs = np.expand_dims(self.box_geom_idxs, -1)
+        box_inds = jp.expand_dims(jp.arange(self.curr_n_boxes), -1)
         box_qpos = qpos[self.box_qpos_idxs]
         box_qvel = qvel[self.box_qvel_idxs]
         box_angle = normalize_angles(box_qpos[:, 3:])
-        polar_angle = np.concatenate([np.cos(box_angle), np.sin(box_angle)], -1)
+        polar_angle = jp.concatenate([np.cos(box_angle), np.sin(box_angle)], -1)
         if self.polar_obs:
-            box_qpos = np.concatenate([box_qpos[:, :3], polar_angle], -1)
-        box_obs = np.concatenate([box_qpos, box_qvel], -1)
+            box_qpos = jp.concatenate([box_qpos[:, :3], polar_angle], -1)
+        box_obs = jp.concatenate([box_qpos, box_qvel], -1)
 
         if self.boxid_obs:
-            box_obs = np.concatenate([box_obs, box_inds], -1)
+            box_obs = jp.concatenate([box_obs, box_inds], -1)
         if self.n_elongated_boxes[1] > 0 or self.boxsize_obs:
-            box_obs = np.concatenate([box_obs, self.box_size_array], -1)
+            box_obs = jp.concatenate([box_obs, self.box_size_array], -1)
 
-        obs = {'box_obs': box_obs,
-               'box_angle': box_angle,
-               'box_geom_idxs': box_geom_idxs,
-               'box_pos': box_qpos[:, :3],
-               'box_xpos': sim.data.geom_xpos[self.box_geom_idxs]}
+        # obs = {'box_obs': box_obs,
+        #        'box_angle': box_angle,
+        #        'box_geom_idxs': box_geom_idxs,
+        #        'box_pos': box_qpos[:, :3],
 
-        if self.mark_box_corners:
-            obs.update({'box_corner_pos': sim.data.site_xpos[self.box_corner_idxs],
-                        'box_corner_idxs': np.expand_dims(self.box_corner_idxs, -1)})
+        obs = jp.concatenate((box_obs, box_angle, box_qpos[:, :3],))
 
         return obs
 

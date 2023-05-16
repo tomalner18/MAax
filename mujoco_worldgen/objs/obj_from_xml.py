@@ -102,7 +102,7 @@ class ObjFromXML(Obj):
                     break  # Found axis
             if not found:  # add this joint
                 slide = OrderedDict()
-                joint_name = self.name + ':slide%d' % i
+                joint_name = self.name + '_slide%d' % i
                 slide['@name'] = joint_name
                 slide['@type'] = 'slide'
                 slide['@axis'] = slide_axis

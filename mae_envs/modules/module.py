@@ -20,7 +20,7 @@ class EnvModule():
         '''
         return True
 
-    def modify_sim_step(self, env, sim):
+    def modify_state_step(self, env, state):
         '''
             After an MJSim has been created, this function can be used to modify that sim
                 and cache any variables you can only get after the sim is created
@@ -31,7 +31,7 @@ class EnvModule():
         '''
         pass
 
-    def observation_step(self, env, sim):
+    def observation_step(self, env, state):
         '''
             Create any observations specific to this module.
             Args:
