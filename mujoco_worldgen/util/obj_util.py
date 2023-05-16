@@ -95,7 +95,7 @@ def recursive_rename(xml_dict, prefix):
             for value in value_dict:
                 for attr in list(value.keys()):
                     if attr in attrs:
-                        if not value[attr].startswith(prefix + ':'):
+                        if not value[attr].startswith(prefix + '_'):
                             value[attr] = prefix + '_' + value[attr]
         if isinstance(value_dict, list):
             for value in value_dict:
@@ -156,7 +156,7 @@ def get_body_xml_node(name, use_joints=False, free=False):
         joint = OrderedDict()
         if free:
             joint['@type'] = "free"
-            joint["@name"] = "%s:%s" % (name, "free")
+            joint["@name"] = "%s_%s" % (name, "free")
             joint['@damping'] = 0.01
             joint['@pos'] = np.zeros(3)
             joints.append(joint)
@@ -164,7 +164,7 @@ def get_body_xml_node(name, use_joints=False, free=False):
             for axis_type in ('slide', 'hinge'):
                 for i, axis in enumerate(np.eye(3)):
                     joint = OrderedDict()
-                    joint['@name'] = "%s:%s%d" % (name, axis_type, i)
+                    joint['@name'] = "%s_%s%d" % (name, axis_type, i)
                     joint['@axis'] = axis
                     joint['@type'] = axis_type
                     joint['@damping'] = 0.01

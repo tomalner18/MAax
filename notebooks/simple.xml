@@ -11,38 +11,38 @@
 			<site name="agent1:lidar0" pos="-3 -3 0" size="0.1 0.1 0.1" rgba="0 0 0 0" type="sphere"></site>
 		</body>
 		<body name="wall0" pos="0.05 2.85 1.5">
-			<joint name="wall0:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall0:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall0_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall0_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall0" rgba="0 1 0 0.1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall1" pos="2.85 0.05 1.5">
-			<joint name="wall1:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall1:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall1_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall1_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall1" rgba="0 1 0 0.1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall2" pos="0.05 2.85 1.5">
-			<joint name="wall2:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall2:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall2_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall2_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall2" rgba="0 1 0 0.1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall3" pos="2.85 0.05 1.5">
-			<joint name="wall3:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall3:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall3_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall3_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall3" rgba="0 1 0 0.1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall4" pos="0.05 0.35 0.25">
-			<joint name="wall4:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall4:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall4_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall4_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.05 0.35 0.25" type="box" condim="3" name="wall4" rgba="0 1 0 1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall5" pos="0.05 0.75 0.25">
-			<joint name="wall5:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall5:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.05 0.75 0.25" type="box" condim="3" name="wall5" rgba="0 1 0 1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body name="wall6" pos="1.05 0.05 0.25">
-			<joint name="wall6:slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall6:slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
+			<joint name="wall6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="1.05 0.05 0.25" type="box" condim="3" name="wall6" rgba="0 1 0 1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent0_agent0">
@@ -57,17 +57,17 @@
 			<joint axis="0 0 1" damping="1" name="agent1_tz" pos="0 0 0" type="slide"></joint>
 			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
-		<body name="moveable_box0" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable_box0:free" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable_box0" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		<body name="moveable-box0" pos="0.25 0.25 0.25">
+			<joint type="free" name="moveable-box0_free" damping="0.01" pos="0 0 0"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box0" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
-		<body name="moveable_box1" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable_box1:free" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable_box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		<body name="moveable-box1" pos="0.25 0.25 0.25">
+			<joint type="free" name="moveable-box1_free" damping="0.01" pos="0 0 0"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
-		<body name="moveable_box2" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable_box2:free" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable_box2" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		<body name="moveable-box2" pos="0.25 0.25 0.25">
+			<joint type="free" name="moveable-box2_free" damping="0.01" pos="0 0 0"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box2" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
 			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" material="material0" friction="0.01"></geom>

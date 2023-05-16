@@ -72,7 +72,7 @@ class ObjFromXML(Obj):
                 if self.name is not None:
                     body_name = self.name
                     if name:
-                        body_name += ":" + name
+                        body_name += "_" + name
                     body['@name'] = body_name
                     body["@pos"] = body["@pos"]
                 bodies.append(body)
