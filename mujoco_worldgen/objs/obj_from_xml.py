@@ -87,6 +87,8 @@ class ObjFromXML(Obj):
         for i, slide_axis in enumerate(np.eye(3)):
             found = False
             for joint in body['joint']:
+                if joint.get('@type') == 'free':
+                    found = True
                 if not isinstance(joint, OrderedDict):
                     continue
                 if joint.get('@type') != 'slide':

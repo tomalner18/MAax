@@ -73,9 +73,12 @@ class Boxes(EnvModule):
                               rgba=[1., 1., 1., 0.])
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))
-            if self.box_only_z_rot:
-                geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
-                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+            # if self.box_only_z_rot:
+            #     geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
+            #     geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+            geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
+            geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+            geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 0.0, 1.0])))
 
             if self.placement_fn is not None:
                 _placement_fn = (self.placement_fn[i]
@@ -150,7 +153,7 @@ class Ramps(EnvModule):
     '''
     @store_args
     def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=True,
-                 pad_ramp_size=False):
+                 pad_ramp_size=False, free=False):
         pass
 
     def build_world_step(self, env, floor, floor_size):
@@ -160,7 +163,10 @@ class Ramps(EnvModule):
 
         for i in range(self.n_ramps):
             char = chr(ord('A') + i % 26)
-            geom = geom = ObjFromXML('ramp', name=f"ramp{i}")
+            if self.free:
+                geom = ObjFromXML('ramp', name=f"ramp{i}")
+            else:
+                geom = ObjFromXML('ramp_slide', name=f"ramp{i}")
             geom.set_material(Material(texture="chars/" + char + ".png"))
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))

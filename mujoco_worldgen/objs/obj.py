@@ -412,6 +412,8 @@ class Obj(object):
                         remaining_joints.append(jnt)
                 elif jnt["@type"] == "ball":
                     remaining_joints.append(jnt)
+                elif jnt["@type"] == "free":
+                    remaining_joints.append(jnt)
             body["joint"] = remaining_joints
 
         if len(self.markers) > 0:
@@ -464,6 +466,9 @@ class Obj(object):
         # the body.
         for body in self.xml_dict["worldbody"]["body"]:
             for jnt in body.get("joint", []):
+                if jnt["@type"] == "free":
+                    position_xinit[jnt["@name"]] = np.concatenate([body["@pos"] + self.absolute_position + np.asarray([0.0, 0.0, 0.0]), np.asarray([1.0, 0.0, 0.0, 0.0])], axis=0)
+                    break
                 if jnt["@type"] == "slide":
                     idx = get_axis_index(jnt["@axis"])
                     position_xinit[jnt["@name"]] = position[idx]
@@ -478,8 +483,8 @@ class Obj(object):
 
         if hasattr(self, "default_qpos") and self.default_qpos is not None:
             for joint, value in self.default_qpos.items():
-                if not joint.startswith(self.name + ':'):
-                    joint = self.name + ":" + joint
+                if not joint.startswith(self.name + '_'):
+                    joint = self.name + "_" + joint
                 xinit[joint] = value
         return xinit
 
