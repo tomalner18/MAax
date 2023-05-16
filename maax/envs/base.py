@@ -43,6 +43,10 @@ class Base(PipelineEnv):
         seed=1,
         backend='generalized',
         **kwargs):
+
+        sys = None
+
+        super().__init__(sys=sys, backend=backend, **kwargs)
         self.n_agents = n_agents
         self.metadata = {}
         self.metadata['n_actors'] = n_agents
@@ -63,15 +67,17 @@ class Base(PipelineEnv):
     def add_module(self, module):
         self.modules.append(module)
 
-    def _get_obs(self, sim):
+    def _get_obs(self, pipeline_state: base.State) -> jp.ndarray:
         '''
+            Returns the environment observation.
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = {}
+        obs = []
         for module in self.modules:
             obs.update(module.observation_step(self, self.sim))
         return obs
+
 
     def _get_xml(self, seed):
         '''
@@ -103,47 +109,22 @@ class Base(PipelineEnv):
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
 
+        pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
+        obs = self._get_obs(pipeline_state)
+        reward, done, zero = jp.zeros(3)
+        metrics = {}
+        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics)
+
+
     def step(self, state: State, action: jp.ndarray) -> State:
         """Run one timestep of the environment's dynamics."""
+        pipeline_state0 = state.pipeline_state
+        pipeline_state = self.pipeline_step(pipeline_state0, action)
 
+        obs = self._get_obs(pipeline_state)
 
-        reward = self.get_reward(self.sim)
-        if not isinstance(reward, float):
-            raise TypeError("The return value of get_reward must be a float")
-
-        obs = self.get_obs(self.sim)
-        diverged, divergence_reward = self.get_diverged(self.sim)
-
-        if not isinstance(diverged, bool):
-            raise TypeError(
-                "The first return value of get_diverged must be boolean")
-        if not isinstance(divergence_reward, float):
-            raise TypeError(
-                "The second return value of get_diverged must be float")
-
-        if diverged:
-            done = True
-            if divergence_reward is not None:
-                reward = divergence_reward
-        elif self.horizon is not None:
-            done = (self.t >= self.horizon)
-        else:
-            done = False
-
-        info = self.get_info(self.sim)
-        info["diverged"] = divergence_reward
         # Return value as required by Gym
-        return obs, reward, done, info
+        return state.replace(pipeline_state=pipeline_state, obs=obs)
 
-    @property
-    def observation_size(self) -> int:
-        """The size of the observation vector returned in step and reset."""
 
-    @property
-    def action_size(self) -> int:
-        """The size of the action vector expected by step."""
-
-    @property
-    def backend(self) -> str:
-        """The physics backend that this env was instantiated with."""
 
