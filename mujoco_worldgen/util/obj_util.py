@@ -140,7 +140,7 @@ def get_name_index(name_indexes, name):
     return result
 
 
-def get_body_xml_node(name, use_joints=False):
+def get_body_xml_node(name, use_joints=False, free=False):
     '''
     Build a body XML dict for use in object models.
         name - name for the body (should be unique in the model, e.g. "geom4")
@@ -153,15 +153,23 @@ def get_body_xml_node(name, use_joints=False):
 
     if use_joints:
         joints = []
-        for axis_type in ('slide', 'hinge'):
-            for i, axis in enumerate(np.eye(3)):
-                joint = OrderedDict()
-                joint['@name'] = "%s:%s%d" % (name, axis_type, i)
-                joint['@axis'] = axis
-                joint['@type'] = axis_type
-                joint['@damping'] = 0.01
-                joint['@pos'] = np.zeros(3)
-                joints.append(joint)
+        joint = OrderedDict()
+        if free:
+            joint['@type'] = "free"
+            joint["@name"] = "%s:%s" % (name, "free")
+            joint['@damping'] = 0.01
+            joint['@pos'] = np.zeros(3)
+            joints.append(joint)
+        else:
+            for axis_type in ('slide', 'hinge'):
+                for i, axis in enumerate(np.eye(3)):
+                    joint = OrderedDict()
+                    joint['@name'] = "%s:%s%d" % (name, axis_type, i)
+                    joint['@axis'] = axis
+                    joint['@type'] = axis_type
+                    joint['@damping'] = 0.01
+                    joint['@pos'] = np.zeros(3)
+                    joints.append(joint)
         body['joint'] = joints
     return body
 

@@ -13,7 +13,8 @@ class Geom(Obj):
                  min_size=None,
                  max_size=None,
                  name=None,
-                 rgba=None):
+                 rgba=None,
+                 free=False):
         super(Geom, self).__init__()
 
     def generate(self, random_state, world_params, placement_size):
@@ -46,7 +47,7 @@ class Geom(Obj):
         Returns a dictionary with keys as names of top-level nodes:
             e.g. 'worldbody', 'materials', 'assets'
         '''
-        body = get_body_xml_node(self.name, use_joints=True)
+        body = get_body_xml_node(self.name, use_joints=True, free=self.free)
         geom = OrderedDict()
         geom['@size'] = self.size * 0.5
         body['@pos'] = self.size * 0.5

@@ -31,11 +31,12 @@ class Boxes(EnvModule):
             mark_box_corners (bool): If true, puts a site in the middle of each of the 4 vertical
                 box edges for each box (these sites are used for calculating distances in the
                 blueprint construction task).
+            free (bool): If true, boxes have free joints. If false, boxes have slide joints
     '''
     @store_args
     def __init__(self, n_boxes, n_elongated_boxes=0, placement_fn=None,
                  box_size=0.5, box_mass=1.0, friction=None, box_only_z_rot=False,
-                 boxid_obs=True, boxsize_obs=False, polar_obs=True, mark_box_corners=False):
+                 boxid_obs=True, boxsize_obs=False, polar_obs=True, mark_box_corners=False, free=False):
         if type(n_boxes) not in [tuple, list, np.ndarray]:
             self.n_boxes = [n_boxes, n_boxes]
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
@@ -64,7 +65,7 @@ class Boxes(EnvModule):
         successful_placement = True
         for i in range(self.curr_n_boxes):
             char = chr(ord('A') + i % 26)
-            geom = Geom("box", self.box_size_array[i, :], name=f'moveable_box{i}')
+            geom = Geom("box", self.box_size_array[i, :], name=f'moveable_box{i}', free=self.free)
             geom.set_material(Material(texture="chars/" + char + ".png"))
             geom.add_transform(set_geom_attr_transform('mass', self.box_mass))
             if self.mark_box_corners:
