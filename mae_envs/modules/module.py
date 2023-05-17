@@ -20,13 +20,11 @@ class EnvModule():
         '''
         return True
 
-    def modify_state_step(self, env, state):
+    def cache_step(self, env):
         '''
-            After an MJSim has been created, this function can be used to modify that sim
-                and cache any variables you can only get after the sim is created
+            Caches environment variables in the module data
             Args:
                 env (gym.env): the environment
-                sim (mujoco_py.MJSim): mujoco simulation object
             Returns: None
         '''
         pass

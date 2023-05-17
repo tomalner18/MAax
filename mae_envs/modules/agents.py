@@ -65,7 +65,7 @@ class Agents(EnvModule):
                 floor.append(obj)
         return successful_placement
 
-    def modify_sim_step(self, env, sim):
+    def cache_step(self, env):
         # Cache qpos, qvel idxs
         self.agent_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'agent{i}')
                                          for i in range(self.n_agents)])
@@ -109,5 +109,5 @@ class AgentManipulation(EnvModule):
                 f'agent{i}:gripper', f'agent{i}:particle', 'floor0'))
         return True
 
-    def modify_state_step(self, env, state):
+    def cache(self, env):
         sim.model.eq_active[:] = 0

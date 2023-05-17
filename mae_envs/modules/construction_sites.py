@@ -84,7 +84,7 @@ class ConstructionSites(EnvModule):
 
         return successful_placement
 
-    def modify_state_step(self, env, state):
+    def cache_step(self, env):
         self.construction_site_idxs = np.array(
             [sim.model.site_name2id(f'{self.site_name}{i}')
              for i in range(self.curr_n_sites)]

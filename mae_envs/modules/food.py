@@ -52,7 +52,7 @@ class Food(EnvModule):
                            size=(self.food_size, self.food_size, self.food_size))
         return successful_placement
 
-    def modify_state_step(self, env, sim):
+    def cache_step(self, env):
         self.food_site_ids = np.array([sim.model.site_name2id(f'food{i}')
                                        for i in range(self.curr_n_food)])
 

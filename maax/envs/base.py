@@ -4,6 +4,7 @@ from brax.envs import Env as BEnv
 from brax import base
 from brax.envs import State
 from brax.envs.env import PipelineEnv
+from brax.io import mjcf
 # Import PipelineEnv
 
 import numpy as np
@@ -74,9 +75,65 @@ class Base(PipelineEnv):
                 adds the result to the observation dictionary.
         '''
         obs = []
-        for module in self.modules:
-            obs.update(module.observation_step(self, self.sim))
+        # for module in self.modules:
+        #     obs.update(module.observation_step(self, self.sim))
         return obs
+
+    def _set_indices(self):
+
+        # for (k, v) in self.init_dict.items():
+        #     obj, joint = k.split('_')
+        #     if obj.startswith('agent'):
+        #         obj = 'agent'
+        #         if "free" in joint:
+
+        #         elif "slide" in joint:
+        #             self.agent_slide_idx = v
+
+        #         elif "hinge" in joint:
+
+
+        #     elif obj.startswith('box'):
+        #         obj = 'box'
+        #     elif obj.startswith('ramp'):
+        #         obj = 'ramp'
+        #     elif obj.startswith('wall'):
+        #         obj = 'wall'
+        #     print()
+        return
+
+    def cache_module_data(self):
+        '''
+            Caches the module q and qp indices for observation steps
+        '''
+        # for module in self.modules:
+        #     module.modify_sim_step
+        return
+
+
+
+    def gen_sys(self, seed):
+        '''
+            Generates the brax system from the random seed.
+            Then populates the q and qp indices for each module.
+        '''
+        xml, self.init_dict, udd_callback = self._get_xml(seed)
+        self.sys = mjcf.loads(xml)
+
+        # init_q = jp.asarray(list(init_dict.values()))
+        self.init_q = jp.hstack(list(self.init_dict.values()))
+
+        # print('Init from joint positions: ', init_q)
+        self.init_qd = jp.zeros(self.sys.qd_size())
+
+        with open("simple.xml", "w") as f:
+            f.write(xml)
+
+        self._set_indices() 
+
+        self._set_module()
+
+
 
 
     def _get_xml(self, seed):
@@ -125,6 +182,25 @@ class Base(PipelineEnv):
 
         # Return value as required by Gym
         return state.replace(pipeline_state=pipeline_state, obs=obs)
+
+    @property
+    def dt(self) -> jp.ndarray:
+        """The timestep used for each env step."""
+        return self.sys.dt * self._n_frames
+
+    @property
+    def observation_size(self) -> int:
+        rng = jax.random.PRNGKey(0)
+        reset_state = self.unwrapped.reset(rng)
+        return reset_state.obs.shape[-1]
+
+    @property
+    def action_size(self) -> int:
+        return self.sys.act_size()
+
+    @property
+    def backend(self) -> str:
+        return self._backend
 
 
 

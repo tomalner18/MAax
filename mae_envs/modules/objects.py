@@ -94,7 +94,7 @@ class Boxes(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def modify_state_step(self, env, state):
+    def cache(self, env):
         # Cache qpos, qvel idxs
         self.box_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'moveable_box{i}:')
                                        for i in range(self.curr_n_boxes)])
@@ -178,7 +178,7 @@ class Ramps(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def modify_sim_step(self, env, sim):
+    def cache(self, env):
         # Cache qpos, qvel idxs
         self.ramp_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'ramp{i}')
                                         for i in range(self.n_ramps)])
@@ -261,7 +261,7 @@ class Cylinders(EnvModule):
 
         return successful_placement
 
-    def modify_sim_step(self, env, sim):
+    def cache_step(self, env):
         if self.make_static:
             self.s_cylinder_geom_idxs = np.array([sim.model.geom_name2id(f'static_cylinder{i}')
                                                   for i in range(self.n_objects)])
