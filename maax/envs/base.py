@@ -74,14 +74,32 @@ class Base(PipelineEnv):
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = []
         # for module in self.modules:
         #     obs.update(module.observation_step(self, self.sim))
-        return obs
+        # return obs
+        return jp.concatenate((pipeline_state.q, pipeline_state.qd))
 
-    def _set_indices(self):
 
-        # for (k, v) in self.init_dict.items():
+    def cache_module_data(self):
+        '''
+            Caches the module q and qp indices for observation steps
+        '''
+        # for module in self.modules:
+        #     module.modify_sim_step
+        return
+
+    def _store_joint_indices(self, init_dict):
+        '''
+            Stores the mapping from joint name to joint indices in the brax system
+        '''
+        index = 0
+        for (k, v) in init_dict.items():
+            obj, joint = k.split('_')
+            v = jp.asarray(v)
+            self.joint_indices[k] = jp.arange(index, index + v.size)
+            index += v.size
+
+                # for (k, v) in self.init_dict.items():
         #     obj, joint = k.split('_')
         #     if obj.startswith('agent'):
         #         obj = 'agent'
@@ -100,25 +118,16 @@ class Base(PipelineEnv):
         #     elif obj.startswith('wall'):
         #         obj = 'wall'
         #     print()
-        return
-
-    def cache_module_data(self):
-        '''
-            Caches the module q and qp indices for observation steps
-        '''
-        # for module in self.modules:
-        #     module.modify_sim_step
-        return
-
-
 
     def gen_sys(self, seed):
         '''
             Generates the brax system from the random seed.
             Then populates the q and qp indices for each module.
         '''
-        xml, self.init_dict, udd_callback = self._get_xml(seed)
+        xml, init_dict, udd_callback = self._get_xml(seed)
         self.sys = mjcf.loads(xml)
+
+        # print(self.init_dict)
 
         # init_q = jp.asarray(list(init_dict.values()))
         self.init_q = jp.hstack(list(self.init_dict.values()))
@@ -129,9 +138,9 @@ class Base(PipelineEnv):
         with open("simple.xml", "w") as f:
             f.write(xml)
 
-        self._set_indices() 
+        # self._set_indices() 
 
-        self._set_module()
+        # self._set_module()
 
 
 
@@ -178,10 +187,9 @@ class Base(PipelineEnv):
         pipeline_state0 = state.pipeline_state
         pipeline_state = self.pipeline_step(pipeline_state0, action)
 
-        obs = self._get_obs(pipeline_state)
+        # obs = self._get_obs(pipeline_state)
 
-        # Return value as required by Gym
-        return state.replace(pipeline_state=pipeline_state, obs=obs)
+        return state.replace(pipeline_state=pipeline_state)
 
     @property
     def dt(self) -> jp.ndarray:

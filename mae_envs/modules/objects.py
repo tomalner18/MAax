@@ -178,14 +178,17 @@ class Ramps(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def cache(self, env):
+    def cache(self, env, init_dict):
         # Cache qpos, qvel idxs
-        self.ramp_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'ramp{i}')
-                                        for i in range(self.n_ramps)])
+        # self.ramp_qpos_idxs = 
         self.ramp_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'ramp{i}')
                                         for i in range(self.n_ramps)])
         self.ramp_geom_idxs = np.array([sim.model.geom_name2id(f'ramp{i}:ramp')
                                         for i in range(self.n_ramps)])
+
+        for i in range(self.n_ramps):
+            qs = init_dict[f'ramp{i}_free']
+
 
     def observation_step(self, env, sim):
         qpos = sim.data.qpos.copy()
