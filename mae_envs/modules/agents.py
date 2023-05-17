@@ -66,13 +66,15 @@ class Agents(EnvModule):
         return successful_placement
 
     def cache_step(self, env):
-        # Cache qpos, qvel idxs
-        self.agent_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'agent{i}')
-                                         for i in range(self.n_agents)])
-        self.agent_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'agent{i}')
-                                        for i in range(self.n_agents)])
-        env.metadata['agent_geom_idxs'] = [sim.model.geom_name2id(f'agent{i}:agent')
-                                           for i in range(self.n_agents)]
+        # Cache q, qd idxs
+        self.agent_q_idxs = env.q_indices['agent']
+        self.agent_qd_idxs = env.qd_indices['agent']
+        # self.agent_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'agent{i}')
+        #                                  for i in range(self.n_agents)])
+        # self.agent_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'agent{i}')
+        #                                 for i in range(self.n_agents)])
+        # env.metadata['agent_geom_idxs'] = [sim.model.geom_name2id(f'agent{i}:agent')
+        #                                    for i in range(self.n_agents)]
 
     def observation_step(self, env, sim):
         qpos = sim.data.qpos.copy()

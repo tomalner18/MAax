@@ -10,6 +10,8 @@ from brax.io import mjcf
 import numpy as np
 import logging
 
+import re
+
 import jax
 import jax.numpy as jp
 
@@ -61,6 +63,8 @@ class Base(PipelineEnv):
         self.kwargs = kwargs
         self.placement_grid = np.zeros((grid_size, grid_size))
         self.modules = []
+        self.q_indices = dict()
+        self.qd_indices = dict()
 
         # Required as mujoco_worldgen
         self._random_state = np.random.RandomState(seed)
@@ -80,44 +84,43 @@ class Base(PipelineEnv):
         return jp.concatenate((pipeline_state.q, pipeline_state.qd))
 
 
-    def cache_module_data(self):
-        '''
-            Caches the module q and qp indices for observation steps
-        '''
-        # for module in self.modules:
-        #     module.modify_sim_step
-        return
-
     def _store_joint_indices(self, init_dict):
         '''
             Stores the mapping from joint name to joint indices in the brax system
         '''
-        index = 0
+        q_index = 0
+        qd_index = 0
         for (k, v) in init_dict.items():
-            obj, joint = k.split('_')
+            body, joint = k.split('_')
+            b_class = re.sub('\d+', '', body)
+            joint = re.sub('\d+', '', joint)
             v = jp.asarray(v)
-            self.joint_indices[k] = jp.arange(index, index + v.size)
-            index += v.size
-
-                # for (k, v) in self.init_dict.items():
-        #     obj, joint = k.split('_')
-        #     if obj.startswith('agent'):
-        #         obj = 'agent'
-        #         if "free" in joint:
-
-        #         elif "slide" in joint:
-        #             self.agent_slide_idx = v
-
-        #         elif "hinge" in joint:
 
 
-        #     elif obj.startswith('box'):
-        #         obj = 'box'
-        #     elif obj.startswith('ramp'):
-        #         obj = 'ramp'
-        #     elif obj.startswith('wall'):
-        #         obj = 'wall'
-        #     print()
+            # Q Assignment: based on class
+            if b_class in self.q_indices:
+                self.q_indices[b_class] = jp.concatenate((self.q_indices[b_class], jp.arange(q_index, q_index + v.size)))
+
+            else:
+                self.q_indices[b_class] = jp.arange(q_index, q_index + v.size)
+            
+            # QD Assignment: based on class and joint type
+            if b_class in self.qd_indices:
+                if joint == "slide" or joint == "hinge":
+                    self.qd_indices[b_class] = jp.concatenate((self.qd_indices[b_class], jp.arange(qd_index, qd_index + 1)))
+                    qd_index += 1
+                elif joint == "free":
+                    self.qd_indices[b_class] = jp.concatenate((self.qd_indices[b_class], jp.arange(qd_index, qd_index + 6)))
+                    qd_index += 6
+            else:
+                if joint == "slide" or joint == "hinge":
+                    self.qd_indices[b_class] = jp.arange(qd_index, qd_index + 1)
+                    qd_index += 1
+                elif joint == "free":
+                    self.qd_indices[b_class] = jp.arange(qd_index, qd_index + 6)
+                    qd_index += 6
+
+            q_index += v.size
 
     def gen_sys(self, seed):
         '''
@@ -127,20 +130,28 @@ class Base(PipelineEnv):
         xml, init_dict, udd_callback = self._get_xml(seed)
         self.sys = mjcf.loads(xml)
 
-        # print(self.init_dict)
 
         # init_q = jp.asarray(list(init_dict.values()))
-        self.init_q = jp.hstack(list(self.init_dict.values()))
+        self.init_q = jp.hstack(list(init_dict.values()))
 
         # print('Init from joint positions: ', init_q)
         self.init_qd = jp.zeros(self.sys.qd_size())
 
-        with open("simple.xml", "w") as f:
-            f.write(xml)
+        print('Init q: ', self.init_q.size)
+        print('Init qd: ', self.init_qd.size)
 
-        # self._set_indices() 
+        # with open("simple.xml", "w") as f:
+        #     f.write(xml)
 
-        # self._set_module()
+        # Store the joint indices for manipulation in observation step
+        self._store_joint_indices(init_dict)
+
+        print('Q indices: ', self.q_indices)
+        print('QD indices: ', self.qd_indices)
+
+        # Cache the joint data in the modules for observation steps
+        for module in self.modules:
+            module.cache_step(self)
 
 
 
@@ -209,6 +220,10 @@ class Base(PipelineEnv):
     @property
     def backend(self) -> str:
         return self._backend
+
+    @property
+    def unwrapped(self):
+        return self
 
 
 

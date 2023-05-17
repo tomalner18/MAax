@@ -95,15 +95,11 @@ class Boxes(EnvModule):
         return successful_placement
 
     def cache(self, env):
-        # Cache qpos, qvel idxs
-        self.box_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'moveable_box{i}:')
-                                       for i in range(self.curr_n_boxes)])
-        self.box_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'moveable_box{i}:')
-                                       for i in range(self.curr_n_boxes)])
-        if self.mark_box_corners:
-            self.box_corner_idxs = np.array([sim.model.site_name2id(f'moveable_box{i}_corner{j}')
-                                             for i in range(self.curr_n_boxes)
-                                             for j in range(4)])
+        # Cache q, qd idxs
+        self.ramp_q_idxs = env.q_indices['moveable-box']
+        self.ramp_qd_idxs = env.qd_indices['moveable-box']
+
+
 
     def observation_step(self, env, state):
         qpos = state.q.copy()
@@ -178,16 +174,10 @@ class Ramps(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def cache(self, env, init_dict):
-        # Cache qpos, qvel idxs
-        # self.ramp_qpos_idxs = 
-        self.ramp_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'ramp{i}')
-                                        for i in range(self.n_ramps)])
-        self.ramp_geom_idxs = np.array([sim.model.geom_name2id(f'ramp{i}:ramp')
-                                        for i in range(self.n_ramps)])
-
-        for i in range(self.n_ramps):
-            qs = init_dict[f'ramp{i}_free']
+    def cache_step(self, env):
+        # Cache q, qd indices
+        self.ramp_q_idxs = env.q_indices['ramp']
+        self.ramp_qd_idxs = env.qd_indices['ramp']
 
 
     def observation_step(self, env, sim):
