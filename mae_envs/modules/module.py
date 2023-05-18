@@ -29,7 +29,7 @@ class EnvModule():
         '''
         pass
 
-    def observation_step(self, env, state):
+    def observation_step(self, state):
         '''
             Create any observations specific to this module.
             Args:

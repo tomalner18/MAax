@@ -9,6 +9,9 @@ from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
 from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
 from mujoco_worldgen import ObjFromXML
 
+import jax
+from jax import numpy as jp
+
 
 class Agents(EnvModule):
     '''
@@ -76,23 +79,29 @@ class Agents(EnvModule):
         # env.metadata['agent_geom_idxs'] = [sim.model.geom_name2id(f'agent{i}:agent')
         #                                    for i in range(self.n_agents)]
 
-    def observation_step(self, env, sim):
-        qpos = sim.data.qpos.copy()
-        qvel = sim.data.qvel.copy()
+    def observation_step(self, state):
+        '''
+        NOTE: Currently agents move via 2D translation. Thus they don't have a rotation
+        '''
+        qs = state.q.copy()
+        qds = state.qd.copy()
 
-        agent_qpos = qpos[self.agent_qpos_idxs]
-        agent_qvel = qvel[self.agent_qvel_idxs]
-        agent_angle = agent_qpos[:, [-1]] - np.pi / 2  # Rotate the angle to match visual front
-        agent_qpos_qvel = np.concatenate([agent_qpos, agent_qvel], -1)
-        polar_angle = np.concatenate([np.cos(agent_angle), np.sin(agent_angle)], -1)
-        if self.polar_obs:
-            agent_qpos = np.concatenate([agent_qpos[:, :-1], polar_angle], -1)
-        agent_angle = normalize_angles(agent_angle)
-        obs = {
-            'agent_qpos_qvel': agent_qpos_qvel,
-            'agent_angle': agent_angle,
-            'agent_pos': agent_qpos[:, :3]}
+        agent_q = qs[self.agent_q_idxs]
+        agent_qd = qds[self.agent_qd_idxs]
+        # agent_angle = agent_q[:, [-1]] - np.pi / 2  # Rotate the angle to match visual front
+        agent_q_qd = jp.concatenate([agent_q, agent_qd], -1)
+        # polar_angle = jp.concatenate([np.cos(agent_angle), np.sin(agent_angle)], -1)
+        # if self.polar_obs:
+        #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
+        # agent_angle = normalize_angles(agent_angle)
+        # obs = {
+        #     'agent_qpos_qvel': agent_qpos_qvel,
+        #     'agent_angle': agent_angle,
+        #     'agent_pos': agent_qpos[:, :3]}
 
+        # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
+        obs = agent_q_qd
+        print("Agent: ", obs.shape)
         return obs
 
 
@@ -111,5 +120,5 @@ class AgentManipulation(EnvModule):
                 f'agent{i}:gripper', f'agent{i}:particle', 'floor0'))
         return True
 
-    def cache(self, env):
-        sim.model.eq_active[:] = 0
+    def cache_step(self, env):
+        self.eq_active[:] = 0

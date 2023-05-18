@@ -78,10 +78,10 @@ class Base(PipelineEnv):
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
+        obs = jp.array([])
         # for module in self.modules:
-        #     obs.update(module.observation_step(self, self.sim))
-        # return obs
-        return jp.concatenate((pipeline_state.q, pipeline_state.qd))
+        #     obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
+        return obs
 
 
     def _store_joint_indices(self, init_dict):
@@ -137,8 +137,8 @@ class Base(PipelineEnv):
         # print('Init from joint positions: ', init_q)
         self.init_qd = jp.zeros(self.sys.qd_size())
 
-        # with open("simple.xml", "w") as f:
-        #     f.write(xml)
+        with open("simple.xml", "w") as f:
+            f.write(xml)
 
         # Store the joint indices for manipulation in observation step
         self._store_joint_indices(init_dict)
@@ -191,9 +191,9 @@ class Base(PipelineEnv):
         
         pipeline_state = self.pipeline_step(pipeline_state0, action)
 
-        # obs = self._get_obs(pipeline_state)
+        obs = self._get_obs(pipeline_state)
 
-        return state.replace(pipeline_state=pipeline_state)
+        return state.replace(pipeline_state=pipeline_state, obs=obs)
 
         # return state.replace(pipeline_state=pipeline_state, obs=obs)
 

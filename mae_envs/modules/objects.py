@@ -94,25 +94,37 @@ class Boxes(EnvModule):
                 floor.append(geom)
         return successful_placement
 
-    def cache(self, env):
+    def cache_step(self, env):
         # Cache q, qd idxs
-        self.ramp_q_idxs = env.q_indices['moveable-box']
-        self.ramp_qd_idxs = env.qd_indices['moveable-box']
+        self.box_q_idxs = env.q_indices['moveable-box']
+        self.box_qd_idxs = env.qd_indices['moveable-box']
 
 
 
-    def observation_step(self, env, state):
-        qpos = state.q.copy()
-        qvel = state.qd.copy()
+    def observation_step(self, state):
+        qs = state.q.copy()
+        qds = state.qd.copy()
+
+        print("Box q indices: ", self.box_q_idxs)
+        print("Box qd indices: ", self.box_qd_idxs)
 
         box_inds = jp.expand_dims(jp.arange(self.curr_n_boxes), -1)
-        box_qpos = qpos[self.box_qpos_idxs]
-        box_qvel = qvel[self.box_qvel_idxs]
-        box_angle = normalize_angles(box_qpos[:, 3:])
+        box_qs = qs[self.box_q_idxs]
+        box_qds = qds[self.box_qd_idxs]
+
+        print("box_qs: ", box_qs)
+        print("box_qds: ", box_qds)
+        box_angle = normalize_angles(box_qs[:, 3:])
+
+        #Print shape for debug
+        print("box_qs shape: ", box_qs.shape)
+        print("box_qds shape: ", box_qds.shape)
+        print("box_angle shape: ", box_angle.shape)
+        print("box_inds shape: ", box_inds.shape)
         polar_angle = jp.concatenate([np.cos(box_angle), np.sin(box_angle)], -1)
         if self.polar_obs:
-            box_qpos = jp.concatenate([box_qpos[:, :3], polar_angle], -1)
-        box_obs = jp.concatenate([box_qpos, box_qvel], -1)
+            box_qs = jp.concatenate([box_qs[:, :3], polar_angle], -1)
+        box_obs = jp.concatenate([box_qs, box_qds], -1)
 
         if self.boxid_obs:
             box_obs = jp.concatenate([box_obs, box_inds], -1)
@@ -123,9 +135,12 @@ class Boxes(EnvModule):
         #        'box_angle': box_angle,
         #        'box_geom_idxs': box_geom_idxs,
         #        'box_pos': box_qpos[:, :3],
-
-        obs = jp.concatenate((box_obs, box_angle, box_qpos[:, :3],))
-
+        #Print obs shape for debug
+        print("Box obs shape: ", box_obs.shape)
+        print("Box angle shape: ", box_angle.shape)
+        print("Box qs shape: ", box_qs.shape)
+        obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
+        print("Box obs shape: ", obs.shape)
         return obs
 
 
@@ -180,27 +195,24 @@ class Ramps(EnvModule):
         self.ramp_qd_idxs = env.qd_indices['ramp']
 
 
-    def observation_step(self, env, sim):
-        qpos = sim.data.qpos.copy()
-        qvel = sim.data.qvel.copy()
+    def observation_step(self, state):
+        qs = state.q.copy()
+        qds = state.qd.copy()
 
-        ramp_geom_idxs = np.expand_dims(self.ramp_geom_idxs, -1)
-        ramp_qpos = qpos[self.ramp_qpos_idxs]
-        ramp_qvel = qvel[self.ramp_qvel_idxs]
+        ramp_qs = qs[self.ramp_q_idxs]
+        ramp_qds = qds[self.ramp_qd_idxs]
         ramp_angle = normalize_angles(ramp_qpos[:, 3:])
-        polar_angle = np.concatenate([np.cos(ramp_angle), np.sin(ramp_angle)], -1)
+        polar_angle = jp.concatenate([jp.cos(ramp_angle), jp.sin(ramp_angle)], -1)
         if self.polar_obs:
-            ramp_qpos = np.concatenate([ramp_qpos[:, :3], polar_angle], -1)
+            ramp_qpos = jp.concatenate([ramp_qs[:, :3], polar_angle], -1)
 
-        ramp_obs = np.concatenate([ramp_qpos, ramp_qvel], -1)
+        ramp_obs = jp.concatenate([ramp_qs, ramp_qds], -1)
         if self.pad_ramp_size:
-            ramp_obs = np.concatenate([ramp_obs, np.zeros((ramp_obs.shape[0], 3))], -1)
+            ramp_obs = jp.concatenate([ramp_obs, jp.zeros((ramp_obs.shape[0], 3))], -1)
 
-        obs = {'ramp_obs': ramp_obs,
-               'ramp_angle': ramp_angle,
-               'ramp_geom_idxs': ramp_geom_idxs,
-               'ramp_pos': ramp_qpos[:, :3]}
+        obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
 
+        print("Ramp obs shape: ", obs.shape)
         return obs
 
 

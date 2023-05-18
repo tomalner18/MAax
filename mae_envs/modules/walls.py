@@ -5,6 +5,9 @@ from mujoco_worldgen.objs.fixed import Fixed
 from mujoco_worldgen.transforms import set_geom_attr_transform
 from mae_envs.modules import EnvModule
 
+import jax
+from jax import numpy as jp
+
 
 class Wall:
     '''
@@ -209,7 +212,7 @@ def split_walls(walls, door_size, random_state=np.random.RandomState()):
 
 def construct_door_obs(doors, floor_size, grid_size):
     '''
-        Construct door observations in mujoco frame from door positions in grid frame.
+        Construct door observations in brax frame from door positions in grid frame.
         Args:
             doors ((n_doors, 2, 2) array): list of pairs of points of door edges.
             floor_size (float): size of floor
@@ -217,9 +220,9 @@ def construct_door_obs(doors, floor_size, grid_size):
     '''
     _doors = doors + 0.5
     scaling = floor_size / grid_size
-    _door_sizes = np.array([np.linalg.norm(door[1] - door[0]) * scaling for door in _doors])
-    _doors = np.array([(door[0] + (door[1] - door[0]) / 2) * scaling for door in _doors])
-    return np.concatenate([_doors, _door_sizes[:, None]], -1)
+    _door_sizes = jp.array([np.linalg.norm(door[1] - door[0]) * scaling for door in _doors])
+    _doors = jp.array([(door[0] + (door[1] - door[0]) / 2) * scaling for door in _doors])
+    return jp.concatenate([jp.ravel(_doors), _door_sizes], -1)
 
 
 def add_walls_to_grid(grid, walls):
@@ -236,7 +239,7 @@ def add_walls_to_grid(grid, walls):
             grid[wall.pt1[0]:wall.pt2[0] + 1, wall.pt1[1]] = 1
 
 
-def walls_to_mujoco(floor, floor_size, grid_size, walls, friction=None):
+def walls_to_brax(floor, floor_size, grid_size, walls, friction=None):
     '''
         Take a list of walls in grid frame and add them to the floor in the worldgen frame.
         Args:
@@ -355,15 +358,15 @@ class RandomWalls(EnvModule):
         if self.gen_door_obs:
             self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
 
-        walls_to_mujoco(floor, floor_size, self.grid_size, walls, friction=self.friction)
+        walls_to_brax(floor, floor_size, self.grid_size, walls, friction=self.friction)
         add_walls_to_grid(env.placement_grid, walls)
         return True
 
-    def observation_step(self, env, state):
+    def observation_step(self, state):
         if self.gen_door_obs:
-            obs = {'door_obs': self.door_obs}
+            obs = self.door_obs
         else:
-            obs = {}
+            obs = jp.zeros((0,))
 
         return obs
 
@@ -382,13 +385,15 @@ class WallScenarios(EnvModule):
                 'var_tri': three rooms, one taking about half of the area and the other
                     two taking about a quarter of the area. Random doors
             friction (float): wall friction
+            gen_door_obs (bool): If true, generate door observation (currently does not
+                work with random room number)
             p_door_dropout (float): probability we don't place one of the doors either
                 quadrant scenario
             low_outside_walls (bool): If true, outside walls are the same height as inside walls.
                 This is just used for pretty rendering
     '''
     @store_args
-    def __init__(self, grid_size, door_size, scenario, friction=None, p_door_dropout=0.0,
+    def __init__(self, grid_size, door_size, scenario, friction=None, gen_door_obs=True, p_door_dropout=0.0,
                  low_outside_walls=False):
         assert scenario in ['var_quadrant', 'quadrant', 'half', 'var_tri', 'empty']
 
@@ -478,20 +483,22 @@ class WallScenarios(EnvModule):
 
         env.metadata['doors'] = np.array(doors)
 
-        # Convert doors into mujoco frame
+        # Convert doors into brax frame
         if len(doors) > 0:
             self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
         else:
             self.door_obs = None
 
-        walls_to_mujoco(floor, floor_size, self.grid_size, walls, friction=self.friction)
+        walls_to_brax(floor, floor_size, self.grid_size, walls, friction=self.friction)
         add_walls_to_grid(env.placement_grid, walls)
         return True
 
-    def observation_step(self, env, state):
-        if self.door_obs is not None:
-            obs = {'door_obs': self.door_obs}
+    def observation_step(self, state):
+        if self.gen_door_obs is not None:
+            obs = self.door_obs
         else:
-            obs = {}
+            obs = jp.zeros((0,))
+
+        print('Wall', obs.shape)
 
         return obs
