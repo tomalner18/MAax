@@ -137,23 +137,15 @@ class Base(PipelineEnv):
         # print('Init from joint positions: ', init_q)
         self.init_qd = jp.zeros(self.sys.qd_size())
 
-        print('Init q: ', self.init_q.size)
-        print('Init qd: ', self.init_qd.size)
-
         # with open("simple.xml", "w") as f:
         #     f.write(xml)
 
         # Store the joint indices for manipulation in observation step
         self._store_joint_indices(init_dict)
 
-        print('Q indices: ', self.q_indices)
-        print('QD indices: ', self.qd_indices)
-
         # Cache the joint data in the modules for observation steps
         for module in self.modules:
             module.cache_step(self)
-
-
 
 
     def _get_xml(self, seed):
@@ -196,11 +188,14 @@ class Base(PipelineEnv):
     def step(self, state: State, action: jp.ndarray) -> State:
         """Run one timestep of the environment's dynamics."""
         pipeline_state0 = state.pipeline_state
+        
         pipeline_state = self.pipeline_step(pipeline_state0, action)
 
         # obs = self._get_obs(pipeline_state)
 
         return state.replace(pipeline_state=pipeline_state)
+
+        # return state.replace(pipeline_state=pipeline_state, obs=obs)
 
     @property
     def dt(self) -> jp.ndarray:

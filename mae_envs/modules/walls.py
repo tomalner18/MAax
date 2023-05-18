@@ -16,7 +16,7 @@ class Wall:
             rgba (float tuple): wall rgba
             mass (float): wall mass
     '''
-    def __init__(self, pt1, pt2, height=0.5, rgba=(0, 1, 0, 1), mass=1000000):
+    def __init__(self, pt1, pt2, height=0.5, rgba=(0.6, 1, 0.6, 1.0), mass=1000000):
         assert pt1[0] == pt2[0] or pt1[1] == pt2[1], (
             "Currently only horizontal and vertical walls are supported")
         self.is_vertical = pt1[0] == pt2[0]
@@ -288,7 +288,7 @@ def walls_to_mujoco(floor, floor_size, grid_size, walls, friction=None):
         floor.append(geom, placement_xy=pos)
 
 
-def outside_walls(grid_size, rgba=(0, 1, 0, 0.1), use_low_wall_height=False):
+def outside_walls(grid_size, rgba=(0.6, 1, 0.6, 1.0), use_low_wall_height=False):
     height = 0.5 if use_low_wall_height else 3.0
     return [Wall([0, 0], [0, grid_size - 1], height=height, rgba=rgba),
             Wall([0, 0], [grid_size - 1, 0], height=height, rgba=rgba),
@@ -317,7 +317,7 @@ class RandomWalls(EnvModule):
     '''
     @store_args
     def __init__(self, grid_size, num_rooms, min_room_size, door_size, friction=None,
-                 num_tries=10, outside_wall_rgba=(0, 1, 0, 0.1),
+                 num_tries=10, outside_wall_rgba=(0.6, 1, 0.6, 1.0),
                  random_room_number=False, gen_door_obs=True, prob_outside_walls=1.0,
                  low_outside_walls=False):
         pass

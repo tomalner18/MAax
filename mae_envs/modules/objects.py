@@ -255,18 +255,9 @@ class Cylinders(EnvModule):
         return successful_placement
 
     def cache_step(self, env):
-        if self.make_static:
-            self.s_cylinder_geom_idxs = np.array([sim.model.geom_name2id(f'static_cylinder{i}')
-                                                  for i in range(self.n_objects)])
-        else:
-            self.m_cylinder_geom_idxs = np.array([sim.model.geom_name2id(f'moveable_cylinder{i}')
-                                                  for i in range(self.n_objects)])
-            qpos_idxs = [qpos_idxs_from_joint_prefix(sim, f'moveable_cylinder{i}')
-                         for i in range(self.n_objects)]
-            qvel_idxs = [qvel_idxs_from_joint_prefix(sim, f'moveable_cylinder{i}')
-                         for i in range(self.n_objects)]
-            self.m_cylinder_qpos_idxs = np.array(qpos_idxs)
-            self.m_cylinder_qvel_idxs = np.array(qvel_idxs)
+        # Cache q, qd indices
+        self.cylinder_q_idxs = env.q_indices['moveable_cylinder']
+        self.cylinder_qd_idxs = env.qd_indices['moveable_cylinder']
 
     def observation_step(self, env, sim):
         qpos = sim.data.qpos.copy()
