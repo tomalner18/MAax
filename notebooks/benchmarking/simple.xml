@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco>
+	<compiler angle="radian" coordinate="local" meshdir="/Users/tom/dev/imperial/FYP/MAax/assets/stls" texturedir="/Users/tom/dev/imperial/FYP/MAax/assets/textures"></compiler>
+	<option timestep="0.005">
+		<flag warmstart="enable"></flag>
+	</option>
+	<worldbody>
+		<geom name="floor0" pos="3 3 0" size="3 3 1" type="plane" condim="3"></geom>
+		<body name="floor0" pos="3 3 0"></body>
+		<body pos="0.15 0.15 0.15" name="agent0_agent0">
+			<joint axis="1 0 0" damping="0.1" name="agent0_slide0" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="agent0_slide1" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="agent0_slide2" pos="0 0 0" type="slide"></joint>
+			<geom name="agent0_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+		</body>
+		<body pos="0.15 0.15 0.15" name="agent1_agent1">
+			<joint axis="1 0 0" damping="0.1" name="agent1_slide0" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="agent1_slide1" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="agent1_slide2" pos="0 0 0" type="slide"></joint>
+			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+		</body>
+		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
+			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" material="material0" friction="0.01"></geom>
+			<joint type="free" name="ramp0_free" damping="0.001"></joint>
+		</body>
+		<body pos="0.25 0.25 0.25" name="ramp1_ramp1">
+			<geom name="ramp1_ramp" pos="0 0 0" type="mesh" mesh="ramp1_ramp" mass="1" rgba="1 1 0.5 1" material="material1" friction="0.01"></geom>
+			<joint type="free" name="ramp1_free" damping="0.001"></joint>
+		</body>
+		<body pos="0.25 0.25 0.25" name="ramp2_ramp2">
+			<geom name="ramp2_ramp" pos="0 0 0" type="mesh" mesh="ramp2_ramp" mass="1" rgba="1 1 0.5 1" material="material2" friction="0.01"></geom>
+			<joint type="free" name="ramp2_free" damping="0.001"></joint>
+		</body>
+		<body pos="0.25 0.25 0.25" name="ramp3_ramp3">
+			<geom name="ramp3_ramp" pos="0 0 0" type="mesh" mesh="ramp3_ramp" mass="1" rgba="1 1 0.5 1" material="material3" friction="0.01"></geom>
+			<joint type="free" name="ramp3_free" damping="0.001"></joint>
+		</body>
+	</worldbody>
+	<actuator>
+		<motor gear="100" joint="agent0_slide0"></motor>
+		<motor gear="100" joint="agent0_slide1"></motor>
+		<motor gear="100" joint="agent1_slide0"></motor>
+		<motor gear="100" joint="agent1_slide1"></motor>
+	</actuator>
+	<asset>
+		<mesh file="ramp.stl" name="ramp0_ramp" scale="0.5 0.5 0.5"></mesh>
+		<mesh file="ramp.stl" name="ramp1_ramp" scale="0.5 0.5 0.5"></mesh>
+		<mesh file="ramp.stl" name="ramp2_ramp" scale="0.5 0.5 0.5"></mesh>
+		<mesh file="ramp.stl" name="ramp3_ramp" scale="0.5 0.5 0.5"></mesh>
+		<texture name="texture_material0" type="cube" builtin="none" file="chars/A.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+		<texture name="texture_material1" type="cube" builtin="none" file="chars/B.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+		<texture name="texture_material2" type="cube" builtin="none" file="chars/C.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+		<texture name="texture_material3" type="cube" builtin="none" file="chars/D.png" gridlayout=".U..LFRB.D.." gridsize="3 4"></texture>
+		<material name="material0" texture="texture_material0"></material>
+		<material name="material1" texture="texture_material1"></material>
+		<material name="material2" texture="texture_material2"></material>
+		<material name="material3" texture="texture_material3"></material>
+	</asset>
+</mujoco>
