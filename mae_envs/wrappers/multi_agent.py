@@ -3,9 +3,10 @@ import numpy as np
 from scipy.linalg import circulant
 from gym.spaces import Tuple, Box, Dict
 from copy import deepcopy
+from mae_envs.wrappers.util import MWrapper, RewardWrapper, ActionWrapper, ObservationWrapper
 
 
-class SplitMultiAgentActions(gym.ActionWrapper):
+class SplitMultiAgentActions(ActionWrapper):
     '''
         Splits mujoco generated actions into a dict of tuple actions.
     '''
@@ -36,7 +37,7 @@ class JoinMultiAgentActions(gym.ActionWrapper):
         return np.split(action, self.n_agents)
 
 
-class SplitObservations(gym.ObservationWrapper):
+class SplitObservations(ObservationWrapper):
     """
         Split observations for each agent.
         Args:

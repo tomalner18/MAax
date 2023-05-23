@@ -2,15 +2,17 @@ import brax
 from brax.envs import Env as BEnv
 # Import
 from brax import base
-from brax.envs import State
 from brax.envs.env import PipelineEnv
 from brax.io import mjcf
-# Import PipelineEnv
+
+from typing import Any, Dict, Optional
 
 import numpy as np
 import logging
 
 import re
+
+from flax import struct
 
 import jax
 import jax.numpy as jp
@@ -19,6 +21,23 @@ from mujoco_worldgen import Floor, WorldBuilder, WorldParams, Env
 from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls
 from mae_envs.modules.objects import Boxes, Ramps
+
+
+
+@struct.dataclass
+class State:
+    """MAax Environment state for training and inference."""
+    pipeline_state: Optional[base.State]
+    obs: jp.ndarray
+    reward: jp.ndarray
+    done: jp.ndarray
+    metrics: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
+    info: Dict[str, Any] = struct.field(default_factory=dict) 
+    q_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
+    qd_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
+    action_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
+    obs_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
+    reward_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
 
 class Base(PipelineEnv):
     '''
@@ -66,7 +85,7 @@ class Base(PipelineEnv):
         self.q_indices = dict()
         self.qd_indices = dict()
 
-        # Required as mujoco_worldgen
+        # Required for worldgen
         self._random_state = np.random.RandomState(seed)
 
     def add_module(self, module):
@@ -182,7 +201,7 @@ class Base(PipelineEnv):
         obs = self._get_obs(pipeline_state)
         reward, done, zero = jp.zeros(3)
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics)
+        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, q_indices=self.q_indices, qd_indices=self.qd_indices)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:

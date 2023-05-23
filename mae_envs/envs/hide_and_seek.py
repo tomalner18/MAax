@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from copy import deepcopy
-from mae_envs.envs.base import Base
+from maax.envs.base import Base
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions,
                                            SplitObservations, SelectKeysWrapper)
 from mae_envs.wrappers.util import (DiscretizeActionWrapper, ConcatenateObsWrapper,

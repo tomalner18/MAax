@@ -11,7 +11,7 @@ class EnvModule():
                 You could also cache variables needed for observations or add
                 information to the env.metadata dict
             Args:
-                env (gym.Env): the environment
+                env (brax.env): the environment
                 floor (worldgen.Floor): square worldgen floor object
                 floor_size (float): size of the worlgen floor object
             Returns: True if the the build_world_step was successful, False if it failed
@@ -24,7 +24,7 @@ class EnvModule():
         '''
             Caches environment variables in the module data
             Args:
-                env (gym.env): the environment
+                env (brax.env): the environment
             Returns: None
         '''
         pass
@@ -33,8 +33,8 @@ class EnvModule():
         '''
             Create any observations specific to this module.
             Args:
-                env (gym.env): the environment
-                sim (mujoco_py.MJSim): mujoco simulation object
+                env (bra.env): the environment
+                state (maax.state): the state
             Returns: dict of observations
         '''
         return {}

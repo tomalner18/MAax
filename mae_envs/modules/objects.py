@@ -105,22 +105,12 @@ class Boxes(EnvModule):
         qs = state.q.copy()
         qds = state.qd.copy()
 
-        print("Box q indices: ", self.box_q_idxs)
-        print("Box qd indices: ", self.box_qd_idxs)
-
         box_inds = jp.expand_dims(jp.arange(self.curr_n_boxes), -1)
         box_qs = qs[self.box_q_idxs]
         box_qds = qds[self.box_qd_idxs]
 
-        print("box_qs: ", box_qs)
-        print("box_qds: ", box_qds)
         box_angle = normalize_angles(box_qs[:, 3:])
 
-        #Print shape for debug
-        print("box_qs shape: ", box_qs.shape)
-        print("box_qds shape: ", box_qds.shape)
-        print("box_angle shape: ", box_angle.shape)
-        print("box_inds shape: ", box_inds.shape)
         polar_angle = jp.concatenate([np.cos(box_angle), np.sin(box_angle)], -1)
         if self.polar_obs:
             box_qs = jp.concatenate([box_qs[:, :3], polar_angle], -1)
@@ -131,14 +121,6 @@ class Boxes(EnvModule):
         if self.n_elongated_boxes[1] > 0 or self.boxsize_obs:
             box_obs = jp.concatenate([box_obs, self.box_size_array], -1)
 
-        # obs = {'box_obs': box_obs,
-        #        'box_angle': box_angle,
-        #        'box_geom_idxs': box_geom_idxs,
-        #        'box_pos': box_qpos[:, :3],
-        #Print obs shape for debug
-        print("Box obs shape: ", box_obs.shape)
-        print("Box angle shape: ", box_angle.shape)
-        print("Box qs shape: ", box_qs.shape)
         obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
         print("Box obs shape: ", obs.shape)
         return obs

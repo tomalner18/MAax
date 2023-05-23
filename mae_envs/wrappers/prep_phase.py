@@ -1,10 +1,10 @@
 import gym
 import numpy as np
 from copy import deepcopy
-from mae_envs.wrappers.util import update_obs_space
+from mae_envs.wrappers.util import update_obs_space, MWrapper
 
 
-class PreparationPhase(gym.Wrapper):
+class PreparationPhase(MWrapper):
     '''
         Rewards are switched off during preparation.
 
@@ -30,6 +30,8 @@ class PreparationPhase(gym.Wrapper):
         return reward
 
     def observation(self, obs):
+        prep_obs = np.ones((self.n_agents, 1)) * self.in_prep_phase
+        obs
         obs['prep_obs'] = (np.ones((self.n_agents, 1)) *
                            np.minimum(1.0, self.step_counter / (self.prep_time + 1e-5)))
 
