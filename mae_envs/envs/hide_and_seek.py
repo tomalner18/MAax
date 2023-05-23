@@ -425,7 +425,6 @@ def make_env(n_substeps=15, horizon=80, deterministic_mode=False,
     if not grab_selective and grab_box:
         env = GrabClosestWrapper(env)
     env = NoActionsInPrepPhase(env, np.arange(n_hiders, n_hiders + n_seekers))
-    env = DiscardMujocoExceptionEpisodes(env)
     env = ConcatenateObsWrapper(env, {'agent_qpos_qvel': ['agent_qpos_qvel', 'hider', 'prep_obs'],
                                       'box_obs': ['box_obs', 'you_lock', 'team_lock', 'obj_lock'],
                                       'ramp_obs': ['ramp_obs'] + (['ramp_you_lock', 'ramp_team_lock', 'ramp_obj_lock'] if lock_ramp else [])})
