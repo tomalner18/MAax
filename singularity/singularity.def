@@ -6,72 +6,38 @@ From: airl_lab/default/airl_env:base_ci
     Version v0.0.1
 
 %post
+  # Update 
+  apt-get update
+  apt-get upgrade -y
+  DEBIAN_FRONTEND=noninteractive apt-get install -y python3-git python3-matplotlib python3-pip libsdl1.2-dev libomp-dev
+  apt-get install -y gcc
+  rm -rf /var/lib/apt/lists/*
 
-   # Update 
-   apt-get update
-   apt-get upgrade -y
-   DEBIAN_FRONTEND=noninteractive apt-get install -y python3-git python3-matplotlib python3-pip libsdl1.2-dev libomp-dev
-   apt-get install -y gcc
-   rm -rf /var/lib/apt/lists/*
+  # Python libraries
+  pip3 install --upgrade pip setuptools wheel
+  pip3 install --upgrade pip
+  pip3 install brax==0.9.0
+  pip3 install click==8.1.3
+  pip3 install flax==0.6.9
+  pip3 install gym==0.26.2
+  pip3 install jax==0.4.9
+  pip3 install numpy==1.24.3
+  pip3 install numpy_stl==2.10.1
+  pip3 install pyhull==2015.2.1
+  pip3 install scipy==1.10.1
+  pip3 install typing_extensions==4.6.1
+  pip3 install xmltodict==0.12.0
 
-   # Python libraries
-   
+  # Create working directory
+  mkdir /FYP
 
-
-    # Use setup.sh and fix_build.py from REPOSITORY
-   cp /git/sferes2/exp/aurora/singularity/resources/setup.sh /git/sferes2/
-   cp /git/sferes2/exp/aurora/singularity/resources/fix_build.py /git/sferes2/
-
-   cd /git/sferes2/
-   ./setup.sh -j 6 $SETUP_ARGS
-
-    cd /git/sferes2/exp/aurora
-    python3 -m singularity.hpc_config --path-folder-json /git/sferes2/exp/aurora/
+  # Clone repo
+  git clogit@github.com:tomalner18/MAax.git
+  cd MAax
+  git checkout ..
+  cd ..  
 
 %runscript
-    bash -c 'sleep $[ ( $RANDOM % 90 )  + 1 ]s'
+   # Run main
+   python3 notebooks/benchmarking/system/benchmark.py
 
-    export HOME=/tmp/home
-    mkdir $HOME
-    D=$(/opt/TurboVNC/bin/vncserver 2>&1 | grep "Desktop" | awk '{print $3}' | sed 's/.*://g')
-    export DISPLAY=':'$D
-
-    CURPATH=$(pwd)
-    cd /git/sferes2/
-    DIRNAME=results_$1
-    PATHNAME=$(date +%Y-%m-%d_%H_%M_%S)_$$
-
-    mkdir -p $CURPATH/$DIRNAME/
-    tmp_dir=$(mktemp -d -p $CURPATH/$DIRNAME/ ${PATHNAME}_XXX)
-    mkdir -p $tmp_dir
-
-
-    executable_name=$1
-    shift
-
-    echo Launching command \'build/exp/aurora/$executable_name -d $tmp_dir "$@"\'
-    build/exp/aurora/$executable_name -d $tmp_dir "$@"
-
-%help
-    To Complete
-
-%apprun gen_job_scripts
-
-
-    python3 /git/sferes2/exp/aurora/submodules/gitlab_notebook/gen_job_script.py "$1"
-
-    python3 /git/sferes2/exp/aurora/experiment_serialiser.py --chosen "$2" --container "$3"
-
-%apprun analysis
-    python3 /git/sferes2/exp/aurora/analysis/analysis_runner.py --data "$1" --number-processes 30
-    CURPATH=$(pwd)
-    echo "Runscript Analysis at "$CURPATH
-    cd /git/sferes2/exp/aurora/
-    git log --decorate --oneline --graph master -n 30 > $CURPATH/git_log.txt
-
-    python3 ./submodules/gitlab_notebook/gen_report.py $CURPATH $CURPATH
-
-%apprun visualisation
-    cd /git/sferes2
-    vglrun ./build/exp/aurora/visualise_hexapod_walls "$@"
-    ./build/exp/aurora/visualise_hexapod_walls "$@"

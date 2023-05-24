@@ -1,5 +1,4 @@
 import gym
-# from mujoco_py import MujocoException
 from gym.spaces import Dict, Box
 import numpy as np
 from copy import deepcopy

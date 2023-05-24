@@ -3,7 +3,6 @@ from collections import OrderedDict
 from copy import deepcopy as copy
 
 import numpy as np
-# from mujoco_py import const, load_model_from_xml, MjSim
 
 from mujoco_worldgen.util.path import worldgen_path
 from mujoco_worldgen.objs.obj import Obj
