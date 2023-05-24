@@ -1,7 +1,7 @@
 import gym
 from gym.spaces import Discrete, MultiDiscrete, Tuple
 import numpy as np
-from mujoco_worldgen.util.rotation import mat2quat
+from worldgen.util.rotation import mat2quat
 from mae_envs.wrappers.util import update_obs_space
 from mae_envs.util.geometry import dist_pt_to_cuboid
 from copy import deepcopy

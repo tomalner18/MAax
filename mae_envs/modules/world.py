@@ -1,5 +1,5 @@
 import logging
-from mujoco_worldgen.transforms import set_geom_attr_transform
+from worldgen.transforms import set_geom_attr_transform
 from mae_envs.modules import EnvModule
 
 

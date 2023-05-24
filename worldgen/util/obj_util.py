@@ -2,7 +2,7 @@ import numpy as np
 from collections import OrderedDict
 # TODO: Write more comments.
 
-from mujoco_worldgen.util.types import accepts, returns, maybe
+from worldgen.util.types import accepts, returns, maybe
 
 
 def get_camera_xyaxes(camera_pos, target_pos):

@@ -3,11 +3,11 @@ from collections import OrderedDict
 
 import numpy as np
 
-from mujoco_worldgen.util.types import accepts, returns
-from mujoco_worldgen.parser import update_mujoco_dict
-from mujoco_worldgen.transforms import closure_transform
-from mujoco_worldgen.util.obj_util import get_name_index, get_axis_index
-from mujoco_worldgen.util.placement import place_boxes
+from worldgen.util.types import accepts, returns
+from worldgen.parser import update_mujoco_dict
+from worldgen.transforms import closure_transform
+from worldgen.util.obj_util import get_name_index, get_axis_index
+from worldgen.util.placement import place_boxes
 
 
 class Obj(object):

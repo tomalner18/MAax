@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_worldgen import Env, WorldParams, WorldBuilder, Floor, ObjFromXML
+from worldgen import Env, WorldParams, WorldBuilder, Floor, ObjFromXML
 
 
 def get_reward(sim):

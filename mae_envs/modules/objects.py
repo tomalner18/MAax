@@ -1,10 +1,10 @@
 import numpy as np
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
+from worldgen.util.types import store_args
+from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
                                             qvel_idxs_from_joint_prefix)
-from mujoco_worldgen import Geom, Material, ObjFromXML
-from mujoco_worldgen.transforms import set_geom_attr_transform
-from mujoco_worldgen.util.rotation import normalize_angles
+from worldgen import Geom, Material, ObjFromXML
+from worldgen.transforms import set_geom_attr_transform
+from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import remove_hinge_axis_transform
 from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
 

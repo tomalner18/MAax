@@ -2,7 +2,7 @@ import numpy as np
 import gym
 from gym.spaces import Box, Dict
 
-from mujoco_worldgen import Floor, WorldBuilder, Geom, ObjFromXML, WorldParams, Env
+from worldgen import Floor, WorldBuilder, Geom, ObjFromXML, WorldParams, Env
 
 
 def update_obs_space(env, delta):

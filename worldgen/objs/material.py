@@ -1,8 +1,8 @@
 import numpy as np
 import hashlib
 from collections import OrderedDict
-from mujoco_worldgen.objs.obj import Obj
-from mujoco_worldgen.util.types import store_args
+from worldgen.objs.obj import Obj
+from worldgen.util.types import store_args
 
 
 class Material(Obj):

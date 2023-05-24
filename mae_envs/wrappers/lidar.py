@@ -1,7 +1,7 @@
 import gym
 import numpy as np
-from mujoco_worldgen.util.rotation import quat_from_angle_and_axis
-from mujoco_worldgen.util.geometry import raycast
+from worldgen.util.rotation import quat_from_angle_and_axis
+from worldgen.util.geometry import raycast
 from mae_envs.wrappers.util import update_obs_space
 
 

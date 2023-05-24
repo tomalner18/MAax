@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from mujoco_worldgen.objs.obj import Obj
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.util.obj_util import get_body_xml_node
-from mujoco_worldgen.util.path import worldgen_path
+from worldgen.objs.obj import Obj
+from worldgen.util.types import store_args
+from worldgen.util.obj_util import get_body_xml_node
+from worldgen.util.path import worldgen_path
 import stl
 import os
 import numpy as np

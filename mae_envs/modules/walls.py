@@ -1,8 +1,8 @@
 import numpy as np
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen import Geom
-from mujoco_worldgen.objs.fixed import Fixed
-from mujoco_worldgen.transforms import set_geom_attr_transform
+from worldgen.util.types import store_args
+from worldgen import Geom
+from worldgen.objs.fixed import Fixed
+from worldgen.transforms import set_geom_attr_transform
 from mae_envs.modules import EnvModule
 
 import jax

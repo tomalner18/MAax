@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_worldgen.util.rotation import quat_mul, quat_conjugate
+from worldgen.util.rotation import quat_mul, quat_conjugate
 
 
 def dist_pt_to_cuboid(pt1, cuboid_center, cuboid_dims, cuboid_quat):

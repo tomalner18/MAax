@@ -1,6 +1,6 @@
 import numpy as np
 from collections import OrderedDict
-from mujoco_worldgen.transforms import closure_transform
+from worldgen.transforms import closure_transform
 
 
 def add_weld_equality_constraint_transform(name, body_name1, body_name2):

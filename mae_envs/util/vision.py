@@ -1,6 +1,6 @@
 import numpy as np
-from mujoco_worldgen.util.rotation import normalize_angles
-from mujoco_worldgen.util.geometry import raycast
+from worldgen.util.rotation import normalize_angles
+from worldgen.util.geometry import raycast
 
 
 def in_cone2d(origin_pts, origin_angles, cone_angle, target_pts):

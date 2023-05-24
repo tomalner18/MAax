@@ -1,5 +1,5 @@
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.objs.obj import Obj
+from worldgen.util.types import store_args
+from worldgen.objs.obj import Obj
 import numpy as np
 from collections import OrderedDict
 

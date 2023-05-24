@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_worldgen.util.types import store_args
+from worldgen.util.types import store_args
 from mae_envs.modules import EnvModule, rejection_placement
 
 

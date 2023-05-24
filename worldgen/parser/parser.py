@@ -1,15 +1,15 @@
 from collections import OrderedDict
 from decimal import getcontext
 from os.path import abspath, dirname, join, exists
-from mujoco_worldgen.transforms import closure_transform
+from worldgen.transforms import closure_transform
 
 import numpy as np
 import xmltodict
 import os
 
-from mujoco_worldgen.util.types import accepts, returns
-from mujoco_worldgen.util.path import worldgen_path
-from mujoco_worldgen.parser.normalize import normalize, stringify
+from worldgen.util.types import accepts, returns
+from worldgen.util.path import worldgen_path
+from worldgen.parser.normalize import normalize, stringify
 
 getcontext().prec = 4
 

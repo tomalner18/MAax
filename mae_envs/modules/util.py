@@ -1,5 +1,5 @@
 import numpy as np
-from mujoco_worldgen.parser import parse_file
+from worldgen.parser import parse_file
 
 
 def get_size_from_xml(obj):

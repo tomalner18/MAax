@@ -1,6 +1,6 @@
 import glob
 import os
-from mujoco_worldgen.parser.normalize import normalize_value
+from worldgen.parser.normalize import normalize_value
 
 
 def parse_arguments(argv):

@@ -9,11 +9,11 @@ from collections import OrderedDict
 
 import numpy as np
 
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.util.path import worldgen_path
-from mujoco_worldgen.parser import parse_file
-from mujoco_worldgen.util.obj_util import get_name_index, recursive_rename
-from mujoco_worldgen.objs.obj import Obj
+from worldgen.util.types import store_args
+from worldgen.util.path import worldgen_path
+from worldgen.parser import parse_file
+from worldgen.util.obj_util import get_name_index, recursive_rename
+from worldgen.objs.obj import Obj
 
 
 class ObjFromXML(Obj):

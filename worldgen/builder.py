@@ -4,9 +4,9 @@ from copy import deepcopy as copy
 
 import numpy as np
 
-from mujoco_worldgen.util.path import worldgen_path
-from mujoco_worldgen.objs.obj import Obj
-from mujoco_worldgen.parser import unparse_dict, update_mujoco_dict
+from worldgen.util.path import worldgen_path
+from worldgen.objs.obj import Obj
+from worldgen.parser import unparse_dict, update_mujoco_dict
 
 logger = logging.getLogger(__name__)
 

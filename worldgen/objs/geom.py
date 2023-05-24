@@ -1,20 +1,21 @@
 import numpy as np
 from collections import OrderedDict
 
-from mujoco_worldgen.objs.obj import Obj
-from mujoco_worldgen.util.obj_util import establish_size, get_body_xml_node
-from mujoco_worldgen.util.types import store_args
+from worldgen.objs.obj import Obj
+from worldgen.util.obj_util import establish_size, get_body_xml_node
+from worldgen.util.types import store_args
 
 
-class Fixed(Obj):
+class Geom(Obj):
 
     @store_args
     def __init__(self, geom_type,
                  min_size=None,
                  max_size=None,
                  name=None,
-                 rgba=None):
-        super(Fixed, self).__init__()
+                 rgba=None,
+                 free=False):
+        super(Geom, self).__init__()
 
     def generate(self, random_state, world_params, placement_size):
         min_size, max_size = establish_size(self.min_size, self.max_size)
@@ -46,8 +47,10 @@ class Fixed(Obj):
         Returns a dictionary with keys as names of top-level nodes:
             e.g. 'worldbody', 'materials', 'assets'
         '''
+        body = get_body_xml_node(self.name, use_joints=True, free=self.free)
         geom = OrderedDict()
         geom['@size'] = self.size * 0.5
+        body['@pos'] = self.size * 0.5
         if self.geom_type == 'cylinder':
             # Mujoco expects only radius and half-length
             geom['@size'] = [geom['@size'][0], geom['@size'][2]]
@@ -56,6 +59,7 @@ class Fixed(Obj):
         geom['@name'] = self.name
         if self.rgba is not None:
             geom['@rgba'] = self.rgba
-        worldbody = OrderedDict([("geom", [geom])])
-        # xml_dict = OrderedDict(worldbody=worldbody)
+        body['geom'] = [geom]
+        xml_dict = OrderedDict()
+        xml_dict['worldbody'] = OrderedDict(body=[body])
         return xml_dict

@@ -1,7 +1,7 @@
 import numpy as np
 import gym
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.util.geometry import raycast
+from worldgen.util.types import store_args
+from worldgen.util.geometry import raycast
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions, SplitObservations,
                                            SelectKeysWrapper)
 from mae_envs.wrappers.util import (DiscretizeActionWrapper, MaskActionWrapper,

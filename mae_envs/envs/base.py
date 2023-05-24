@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from mujoco_worldgen import Floor, WorldBuilder, WorldParams, Env
+from worldgen import Floor, WorldBuilder, WorldParams, Env
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions, SplitObservations,
                                            SelectKeysWrapper)
 from mae_envs.wrappers.util import DiscretizeActionWrapper

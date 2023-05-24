@@ -1,13 +1,13 @@
 import numpy as np
-from mujoco_worldgen.util.types import store_args
-from mujoco_worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
+from worldgen.util.types import store_args
+from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
                                             qvel_idxs_from_joint_prefix)
-from mujoco_worldgen.transforms import set_geom_attr_transform
-from mujoco_worldgen.util.rotation import normalize_angles
+from worldgen.transforms import set_geom_attr_transform
+from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
                                       set_joint_damping_transform)
 from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
-from mujoco_worldgen import ObjFromXML
+from worldgen import ObjFromXML
 
 import jax
 from jax import numpy as jp

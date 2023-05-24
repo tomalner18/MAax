@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from mae_envs.wrappers.util import update_obs_space
-from mujoco_worldgen.util.types import store_args
+from worldgen.util.types import store_args
 from gym.spaces import Tuple, MultiDiscrete
 
 

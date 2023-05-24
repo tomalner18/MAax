@@ -17,7 +17,7 @@ from flax import struct
 import jax
 import jax.numpy as jp
 
-from mujoco_worldgen import Floor, WorldBuilder, WorldParams
+from worldgen import Floor, WorldBuilder, WorldParams
 from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls
 from mae_envs.modules.objects import Boxes, Ramps

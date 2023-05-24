@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from mujoco_worldgen.util.types import accepts, returns
-from mujoco_worldgen.parser.const import list_types, float_arg_types
+from worldgen.util.types import accepts, returns
+from worldgen.parser.const import list_types, float_arg_types
 import numpy as np
 from decimal import Decimal, getcontext
 import ast

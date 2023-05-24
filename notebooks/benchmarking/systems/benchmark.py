@@ -7,7 +7,7 @@ import json
 from typing import Any, Callable, Tuple
 from functools import partial
 
-from mujoco_worldgen import Floor, WorldBuilder, WorldParams, Env
+from worldgen import Floor, WorldBuilder, WorldParams, Env
 from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls, WallScenarios
 from mae_envs.modules.world import FloorAttributes, WorldConstants
