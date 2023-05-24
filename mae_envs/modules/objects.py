@@ -154,7 +154,7 @@ class Ramps(EnvModule):
                 geom = ObjFromXML('ramp', name=f"ramp{i}")
             else:
                 geom = ObjFromXML('ramp_slide', name=f"ramp{i}")
-            geom.set_material(Material(texture="chars/" + char + ".png"))
+            # geom.set_material(Material(texture="chars/" + char + ".png"))
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))
 

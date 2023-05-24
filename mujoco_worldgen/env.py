@@ -5,7 +5,6 @@ import hashlib
 import gym
 import numpy as np
 from gym.spaces import Box, Tuple, Dict
-# from mujoco_py import MjSimState
 
 from mujoco_worldgen.util.types import enforce_is_callable
 from mujoco_worldgen.util.sim_funcs import (
@@ -389,25 +388,6 @@ class Env(gym.Env):
         """ Gets a new observation from the environment. """
         self.sim.forward()
         return self.get_obs(self.sim)
-
-    def render(self, mode='human', close=False):
-        if close:
-            # TODO: actually close the inspection viewer
-            return
-        assert self.sim is not None, \
-            "Please reset environment before render()."
-        if mode == 'human':
-            # Use a nicely-interactive version of the mujoco viewer
-            if self.viewer is None:
-                # Inline import since this is only relevant on platforms
-                # which have GLFW support.
-                from mujoco_py.mjviewer import MjViewer  # noqa
-                self.viewer = MjViewer(self.sim)
-            self.viewer.render()
-        elif mode == 'rgb_array':
-            return self.sim.render(500, 500)
-        else:
-            raise ValueError("Unsupported mode %s" % mode)
 
 
 class EmptyEnvException(Exception):

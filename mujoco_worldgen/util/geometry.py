@@ -1,5 +1,4 @@
 import numpy as np
-# from mujoco_py import functions
 from ctypes import c_int, addressof
 from math import sqrt
 
