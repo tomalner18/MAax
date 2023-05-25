@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append('/Users/tom/dev/imperial/FYP/MAax/')
+sys.path.append(os.getcwd())
 
 import time
 import json
@@ -117,7 +117,7 @@ def main():
     env = make_env(seed)
     env.gen_sys(seed)
 
-    batch_sizes = [1, 2, 4, 8, 16, 32]
+    batch_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
 
     jit_step_fn = jax.jit(env.step)
     jit_batch_reset_fn = jax.jit(jax.vmap(env.reset))

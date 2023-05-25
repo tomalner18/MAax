@@ -2,7 +2,7 @@ Bootstrap: library
 From: airl_lab/default/airl_env:base_ci
 
 
-%labels Author tla19@ic.ac.uk
+%labels Author tomalner18@gmail.com
     Version v0.0.1
 
 %post
@@ -32,7 +32,7 @@ From: airl_lab/default/airl_env:base_ci
   mkdir /FYP
 
   # Clone repo
-  git clogit@github.com:tomalner18/MAax.git
+  git clone git@github.com:tomalner18/MAax.git
   cd MAax
   git checkout ..
   cd ..  
