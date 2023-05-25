@@ -7,7 +7,7 @@ import json
 from typing import Any, Callable, Tuple
 from functools import partial
 
-from worldgen import Floor, WorldBuilder, WorldParams, Env
+from worldgen import Floor, WorldBuilder, WorldParams
 from mae_envs.modules.agents import Agents
 from mae_envs.modules.walls import RandomWalls, WallScenarios
 from mae_envs.modules.world import FloorAttributes, WorldConstants
@@ -33,7 +33,7 @@ from brax.envs.env import State
 def make_env(seed, n_substeps=15, horizon=80, deterministic_mode=False,
              floor_size=6.0, grid_size=30, door_size=2,
              n_hiders=1, n_seekers=1, max_n_agents=None,
-             n_boxes=2, n_ramps=1, n_elongated_boxes=0,
+             n_boxes=1, n_ramps=1, n_elongated_boxes=0,
              rand_num_elongated_boxes=False, n_min_boxes=None,
              box_size=0.5, boxid_obs=True, boxsize_obs=True, box_only_z_rot=True,
              pad_ramp_size=True,
@@ -111,13 +111,13 @@ def rollout(env, batch_size, step_fn, reset_fn, random_key, unroll_fn):
 
 def main():
     seed = 10
-    episode_length = 10
+    episode_length = 50
     random_key = jax.random.PRNGKey(seed)
 
     env = make_env(seed)
     env.gen_sys(seed)
 
-    batch_sizes = [1, 2, 4]
+    batch_sizes = [1, 2, 4, 8, 16, 32]
 
     jit_step_fn = jax.jit(env.step)
     jit_batch_reset_fn = jax.jit(jax.vmap(env.reset))

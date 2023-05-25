@@ -58,10 +58,6 @@
 			<joint type="free" name="moveable-box0_free" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box0" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
-		<body name="moveable-box1" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable-box1_free" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
-		</body>
 		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
 			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" friction="0.01"></geom>
 			<joint type="free" name="ramp0_free" damping="0.001"></joint>
