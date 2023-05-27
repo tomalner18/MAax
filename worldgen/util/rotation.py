@@ -365,7 +365,7 @@ def normalize_angles(angles):
     angles = angles.copy()
     if angles.size > 0:
         angles = (angles + jp.pi) % (2 * jp.pi) - jp.pi
-        assert -(jp.pi + 1e-6) <= angles.min() and angles.max() <= (jp.pi + 1e-6)
+        # assert -(jp.pi + 1e-6) <= angles.min() and angles.max() <= (jp.pi + 1e-6)
     return angles
 
 

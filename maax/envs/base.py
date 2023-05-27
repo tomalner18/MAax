@@ -28,16 +28,11 @@ from mae_envs.modules.objects import Boxes, Ramps
 class State:
     """MAax Environment state for training and inference."""
     pipeline_state: Optional[base.State]
-    obs: jp.ndarray
+    obs: Dict[str, jp.ndarray]
     reward: jp.ndarray
     done: jp.ndarray
     metrics: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
     info: Dict[str, Any] = struct.field(default_factory=dict) 
-    q_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    qd_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    action_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    obs_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    reward_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
 
 class Base(PipelineEnv):
     '''
@@ -97,9 +92,10 @@ class Base(PipelineEnv):
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = jp.array([])
-        # for module in self.modules:
-        #     obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
+        obs = {}
+        for module in self.modules:
+            # obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
+            obs.update(module.observation_step(pipeline_state))
         return obs
 
 
@@ -201,7 +197,7 @@ class Base(PipelineEnv):
         obs = self._get_obs(pipeline_state)
         reward, done, zero = jp.zeros(3)
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, q_indices=self.q_indices, qd_indices=self.qd_indices)
+        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:

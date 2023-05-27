@@ -363,10 +363,10 @@ class RandomWalls(EnvModule):
         return True
 
     def observation_step(self, state):
-        if self.gen_door_obs:
-            obs = self.door_obs
+        if self.door_obs is not None:
+            obs = {'door_obs': self.door_obs}
         else:
-            obs = jp.zeros((0,))
+            obs = {}
 
         return obs
 
@@ -495,11 +495,9 @@ class WallScenarios(EnvModule):
         return True
 
     def observation_step(self, state):
-        if self.gen_door_obs is not None:
-            obs = self.door_obs
+        if self.door_obs is not None:
+            obs = {'door_obs': self.door_obs}
         else:
-            obs = jp.zeros((0,))
-
-        print('Wall', obs.shape)
+            obs = {}
 
         return obs
