@@ -18,14 +18,15 @@ class FloorAttributes(EnvModule):
 
 class WorldConstants(EnvModule):
     '''
-        For each (key, value) in kwargs, sets sim.model.opt[key] = value
+        For each (key, value) in kwargs, sets env.sys.[key] = value
     '''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def cache_step(self, env, state):
+    def cache_step(self, env):
         for k, v in self.kwargs.items():
-            if not hasattr(sim.model.opt, k):
-                logging.warning(f"sim.model.opt does not have attribute {k}")
+            if not hasattr(env.sys, k):
+                logging.warning(f"Brax system does not have attribute {k}")
             else:
-                getattr(sim.model.opt, k)[:] = v
+                'TODO: does not work for array types'
+                getattr(env.sys, k)[:] = v

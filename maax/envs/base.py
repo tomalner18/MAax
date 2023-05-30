@@ -45,7 +45,6 @@ class Base(PipelineEnv):
             floor_size (float or (float, float)): size of the floor. If a list of 2 floats, the floorsize
                 will be randomized between them on each episode
             grid_size (int): size of the grid that we'll use to place objects on the floor
-            action_lims (float tuple): lower and upper limit of mujoco actions
             deterministic_mode (bool): if True, seeds are incremented rather than randomly sampled.
     '''
     def __init__(
@@ -67,8 +66,10 @@ class Base(PipelineEnv):
         self.n_agents = n_agents
         self.metadata = {}
         self.metadata['n_actors'] = n_agents
+        self.metadata['n_agents'] = n_agents
         self.horizon = horizon
         self.n_substeps = n_substeps
+        self.floor_size = floor_size
         if not isinstance(floor_size, (tuple, list, np.ndarray)):
             self.floor_size_dist = [floor_size, floor_size]
         else:
@@ -111,7 +112,6 @@ class Base(PipelineEnv):
             joint = re.sub('\d+', '', joint)
             v = jp.asarray(v)
 
-
             # Q Assignment: based on class
             if b_class in self.q_indices:
                 self.q_indices[b_class] = jp.concatenate((self.q_indices[b_class], jp.arange(q_index, q_index + v.size)))
@@ -142,13 +142,11 @@ class Base(PipelineEnv):
             Generates the brax system from the random seed.
             Then populates the q and qp indices for each module.
         '''
-        xml, init_dict, udd_callback = self._get_xml(seed)
+        xml, self.init_dict, udd_callback = self._get_xml(seed)
         self.sys = mjcf.loads(xml)
 
-
         # init_q = jp.asarray(list(init_dict.values()))
-        self.init_q = jp.hstack(list(init_dict.values()))
-
+        self.init_q = jp.hstack(list(self.init_dict.values()))
         # print('Init from joint positions: ', init_q)
         self.init_qd = jp.zeros(self.sys.qd_size())
 
@@ -156,7 +154,7 @@ class Base(PipelineEnv):
             f.write(xml)
 
         # Store the joint indices for manipulation in observation step
-        self._store_joint_indices(init_dict)
+        self._store_joint_indices(self.init_dict)
 
         # Cache the joint data in the modules for observation steps
         for module in self.modules:
@@ -190,14 +188,24 @@ class Base(PipelineEnv):
 
         return builder.get_xml()
 
+    def set_info(self) -> Dict[str, Any]:
+        """Sets the environment info."""
+        return {'in_prep_phase': False}
+
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
+        # init_q = jp.asarray(list(init_dict.values()))
+        init_q = jp.hstack(list(self.init_dict.values()))
+        # print('Init from joint positions: ', init_q)
+        init_qd = jp.zeros(self.sys.qd_size())
 
         pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
         obs = self._get_obs(pipeline_state)
-        reward, done, zero = jp.zeros(3)
+        reward = jp.zeros(shape=(self.n_agents,))
+        done, zero = jp.zeros(2)
+        info = self.set_info()
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics)
+        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, info=info)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:

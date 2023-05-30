@@ -105,22 +105,3 @@ class Agents(EnvModule):
 
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
         return obs
-
-
-class AgentManipulation(EnvModule):
-    '''
-        Adding this module is necessary for the grabbing mechanic implemented in GrabObjWrapper
-        (found in mae_envs/wrappers/manipulation.py) to work correctly.
-    '''
-    @store_args
-    def __init__(self):
-        pass
-
-    def build_world_step(self, env, floor, floor_size):
-        for i in range(env.n_agents):
-            floor.add_transform(add_weld_equality_constraint_transform(
-                f'agent{i}:gripper', f'agent{i}:particle', 'floor0'))
-        return True
-
-    def cache_step(self, env):
-        self.eq_active[:] = 0

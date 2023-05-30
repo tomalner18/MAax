@@ -39,7 +39,7 @@ class Boxes(EnvModule):
     @store_args
     def __init__(self, n_boxes, n_elongated_boxes=0, placement_fn=None,
                  box_size=0.5, box_mass=1.0, friction=None, box_only_z_rot=False,
-                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=False):
+                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=True):
         if type(n_boxes) not in [tuple, list, np.ndarray]:
             self.n_boxes = [n_boxes, n_boxes]
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
@@ -102,9 +102,10 @@ class Boxes(EnvModule):
 
 
     def observation_step(self, state):
-        # Boxes have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
+        # Boxes have 6 qs (pos, rot) and 6 qds (vel, angv)
         qs = state.q.copy()
         qds = state.qd.copy()
+
 
         box_inds = jp.expand_dims(jp.arange(self.curr_n_boxes), -1)
         box_qs = qs[self.box_q_idxs]
@@ -151,7 +152,7 @@ class Ramps(EnvModule):
     '''
     @store_args
     def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=True,
-                 pad_ramp_size=False, free=False):
+                 pad_ramp_size=False, free=True):
         pass
 
     def build_world_step(self, env, floor, floor_size):
