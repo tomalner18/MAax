@@ -139,11 +139,16 @@ class HideAndSeekRewardWrapper(MWrapper):
         this_rew = jp.ones((self.n_agents,))
         mask_aa_con = obs['mask_aa_con']
 
-        observed_hiders = jp.any(mask_aa_con[self.n_hiders:, :self.n_hiders], axis=0)
-        this_rew = jp.where(observed_hiders, -1.0, this_rew)
+        hiders = mask_aa_con[:self.n_hiders, self.n_hiders:]
+        seekers = mask_aa_con[self.n_hiders:, :self.n_hiders]
 
-        observed_seekers = ~jp.any(mask_aa_con[self.n_hiders:, :self.n_hiders], axis=1)
-        this_rew = jp.where(observed_seekers, -1.0, this_rew)
+        hiders_contact = jp.any(hiders, axis=1)
+        seekers_contact = jp.any(seekers, axis=0)
+
+        hider_rewards = jp.where(hiders_contact, -1.0, 1.0)
+        seeker_rewards = jp.where(seekers_contact, 1.0, -1.0)
+
+        this_rew = jp.concatenate([hider_rewards, seeker_rewards])
 
         if self.rew_type == 'joint_mean':
            this_rew.at[:self.n_hiders].set(this_rew[:self.n_hiders].mean())

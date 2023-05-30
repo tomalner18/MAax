@@ -10,7 +10,7 @@ class AgentAgentContactMask2D(ObservationWrapper):
     Args:
         distance_threshold: (float) the distance below which agents are considered in contact
     """
-    def __init__(self, env, distance_threshold=100):
+    def __init__(self, env, distance_threshold=3):
         super().__init__(env)
         self.distance_threshold = distance_threshold
         self.n_agents = self.unwrapped.n_agents

@@ -81,7 +81,6 @@ class NoActionsInPrepPhase(MWrapper):
             #     else:
             #         zero_ac = 0.0
             ac = ac.at[self.agent_idxs].set(zero_ac)
-
         return ac
 
 

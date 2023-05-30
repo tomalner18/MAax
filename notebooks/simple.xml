@@ -52,7 +52,19 @@
 			<joint axis="1 0 0" damping="0.1" name="agent1_slide0" pos="0 0 0" type="slide"></joint>
 			<joint axis="0 1 0" damping="0.1" name="agent1_slide1" pos="0 0 0" type="slide"></joint>
 			<joint axis="0 0 1" damping="0.1" name="agent1_slide2" pos="0 0 0" type="slide"></joint>
-			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+		</body>
+		<body pos="0.15 0.15 0.15" name="agent2_agent2">
+			<joint axis="1 0 0" damping="0.1" name="agent2_slide0" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="agent2_slide1" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="agent2_slide2" pos="0 0 0" type="slide"></joint>
+			<geom name="agent2_agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+		</body>
+		<body pos="0.15 0.15 0.15" name="agent3_agent3">
+			<joint axis="1 0 0" damping="0.1" name="agent3_slide0" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 1 0" damping="0.1" name="agent3_slide1" pos="0 0 0" type="slide"></joint>
+			<joint axis="0 0 1" damping="0.1" name="agent3_slide2" pos="0 0 0" type="slide"></joint>
+			<geom name="agent3_agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
 		<body name="moveable-box0" pos="0.25 0.25 0.25">
 			<joint type="free" name="moveable-box0_free" damping="0.01" pos="0 0 0"></joint>
@@ -72,6 +84,10 @@
 		<motor gear="100" joint="agent0_slide1"></motor>
 		<motor gear="100" joint="agent1_slide0"></motor>
 		<motor gear="100" joint="agent1_slide1"></motor>
+		<motor gear="100" joint="agent2_slide0"></motor>
+		<motor gear="100" joint="agent2_slide1"></motor>
+		<motor gear="100" joint="agent3_slide0"></motor>
+		<motor gear="100" joint="agent3_slide1"></motor>
 	</actuator>
 	<asset>
 		<mesh file="ramp.stl" name="ramp0_ramp" scale="0.5 0.5 0.5"></mesh>

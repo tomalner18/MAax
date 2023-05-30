@@ -209,10 +209,15 @@ class Base(PipelineEnv):
 
 
     def step(self, state: State, action: jp.ndarray) -> State:
-        """Run one timestep of the environment's dynamics."""
+        """Run one timestep of the environment's dynamics.
+        Args:
+            state: current state of the environment.
+            action: action to take in the environment NOTE: Action arrives in shape (n_agents, action_size)
+        """
         pipeline_state0 = state.pipeline_state
+
         
-        pipeline_state = self.pipeline_step(pipeline_state0, action)
+        pipeline_state = self.pipeline_step(pipeline_state0, action.ravel())
 
         obs = self._get_obs(pipeline_state)
 

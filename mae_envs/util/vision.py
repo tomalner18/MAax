@@ -20,9 +20,7 @@ def caught(origin_pts, threshold_dist=0.5):
     for i in range(origin_pts.shape[0]):
         for j in range(origin_pts.shape[0]):
             if i != j:
-                print(origin_pts[i][0], origin_pts[j][0])
-                print(origin_pts[i][1], origin_pts[j][1])
-                contact_mask.at[i, j].set(jp.linalg.norm(origin_pts[i] - origin_pts[j]) < threshold_dist)
+                contact_mask = contact_mask.at[i, j].set(jp.linalg.norm(origin_pts[i] - origin_pts[j]) < threshold_dist)
     return contact_mask
     
 
