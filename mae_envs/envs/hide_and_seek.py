@@ -134,14 +134,20 @@ class HideAndSeekRewardWrapper(MWrapper):
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
+        obs = dst_state.obs
 
         this_rew = jp.ones((self.n_agents,))
-        # this_rew[:self.n_hiders][jp.any(dst_state.obs['mask_aa_obs'][self.n_hiders:, :self.n_hiders], 0)] = -1.0
-        # this_rew[self.n_hiders:][~jp.any(dst_state.obs['mask_aa_obs'][self.n_hiders:, :self.n_hiders], 1)] = -1.0
+        mask_aa_con = obs['mask_aa_con']
+
+        observed_hiders = jp.any(mask_aa_con[self.n_hiders:, :self.n_hiders], axis=0)
+        this_rew = jp.where(observed_hiders, -1.0, this_rew)
+
+        observed_seekers = ~jp.any(mask_aa_con[self.n_hiders:, :self.n_hiders], axis=1)
+        this_rew = jp.where(observed_seekers, -1.0, this_rew)
 
         if self.rew_type == 'joint_mean':
-           this_rew = this_rew.at[:self.n_hiders].set(this_rew[:self.n_hiders].mean())
-           this_rew = this_rew.at[self.n_hiders:].set(this_rew[self.n_hiders:].mean())
+           this_rew.at[:self.n_hiders].set(this_rew[:self.n_hiders].mean())
+           this_rew.at[self.n_hiders:].set(this_rew[self.n_hiders:].mean())
         elif self.rew_type == 'joint_zero_sum':
             this_rew.at[:self.n_hiders].set(jp.min(this_rew[:self.n_hiders]))
             this_rew.at[self.n_hiders:].set(jp.max(this_rew[self.n_hiders:]))
@@ -152,7 +158,6 @@ class HideAndSeekRewardWrapper(MWrapper):
 
         this_rew = jp.multiply(this_rew, self.reward_scale)
         this_rew = jp.add(this_rew, dst_state.reward)
-        print('this_rew', this_rew)
         return dst_state.replace(reward=this_rew)
 
 
@@ -181,7 +186,7 @@ class MaskUnseenAction(MWrapper):
         return state
 
     def step(self, state, action):
-        is_caught = jp.any(self.prev_obs['mask_aa_obs'][self.n_hiders:, :self.n_hiders])
+        is_caught = jp.any(self.prev_obs['mask_aa_con'][self.n_hiders:, :self.n_hiders])
         if is_caught:
             action[self.action_key][self.this_team] = 0
 

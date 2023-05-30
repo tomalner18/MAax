@@ -3,6 +3,29 @@ from jax import numpy as jp
 from worldgen.util.rotation import normalize_angles
 from worldgen.util.geometry import raycast
 
+def caught(origin_pts, threshold_dist=0.5):
+    '''
+    Computes whether agents are within a threhsold distance of each other in 2D space
+    Args:
+        origin_pts (jp.ndarray): array with shape (n_agents, 2) of agent x-y positions
+    Returns:
+        contact_mask (jp.ndarray): array with shape (n_agents, n_agents) of bools
+    '''
+    assert isinstance(origin_pts, jp.ndarray)
+    assert origin_pts.shape[1] == 2
+
+    #Initialise contact mask
+    contact_mask = jp.zeros((origin_pts.shape[0], origin_pts.shape[0]), dtype=bool)
+    # Populate contact_mask with whether agents are within threshold distance
+    for i in range(origin_pts.shape[0]):
+        for j in range(origin_pts.shape[0]):
+            if i != j:
+                print(origin_pts[i][0], origin_pts[j][0])
+                print(origin_pts[i][1], origin_pts[j][1])
+                contact_mask.at[i, j].set(jp.linalg.norm(origin_pts[i] - origin_pts[j]) < threshold_dist)
+    return contact_mask
+    
+
 
 def in_cone2d(origin_pts, origin_angles, cone_angle, target_pts):
     '''

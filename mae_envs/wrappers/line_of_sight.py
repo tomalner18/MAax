@@ -1,8 +1,27 @@
 import jax
 from jax import numpy as jp
-from mae_envs.util.vision import insight, in_cone2d
+from mae_envs.util.vision import insight, in_cone2d, caught
 from mae_envs.wrappers.util import ObservationWrapper
 
+
+class AgentAgentContactMask2D(ObservationWrapper):
+    """
+    Adds an mask observation that states which agents are in contact with which agents.
+    Args:
+        distance_threshold: (float) the distance below which agents are considered in contact
+    """
+    def __init__(self, env, distance_threshold=100):
+        super().__init__(env)
+        self.distance_threshold = distance_threshold
+        self.n_agents = self.unwrapped.n_agents
+    
+    def observation(self, obs):
+        # Agent to agent contact mask
+        agent_pos2d = obs['agent_pos'][:, :-1]
+        contact_mask = caught(agent_pos2d, self.distance_threshold)
+
+        obs['mask_aa_con'] = contact_mask
+        return obs
 
 class AgentAgentObsMask2D(ObservationWrapper):
     """ Adds an mask observation that states which agents are visible to which agents.
