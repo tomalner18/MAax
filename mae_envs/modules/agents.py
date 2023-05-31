@@ -29,7 +29,7 @@ class Agents(EnvModule):
     '''
     @store_args
     def __init__(self, n_agents, placement_fn=None, color=None, friction=None,
-                 damp_z=False, polar_obs=True):
+                 damp_z=False, polar_obs=True, arm=True):
         pass
 
     def build_world_step(self, env, floor, floor_size):
@@ -40,7 +40,10 @@ class Agents(EnvModule):
             env.metadata.pop(f"agent{i}_initpos", None)
 
         for i in range(self.n_agents):
-            obj = ObjFromXML("particle", name=f"agent{i}")
+            if self.arm:
+                obj = ObjFromXML("particle_arm", name=f"agent{i}")
+            else:
+                obj = ObjFromXML("particle", name=f"agent{i}")
             if self.friction is not None:
                 obj.add_transform(set_geom_attr_transform('friction', self.friction))
             if self.color is not None:

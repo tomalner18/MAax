@@ -84,28 +84,28 @@ class ObjFromXML(Obj):
             body['joint'] = []
         if isinstance(body['joint'], OrderedDict):
             body['joint'] = [body['joint']]
-        for i, slide_axis in enumerate(np.eye(3)):
+        for i, jnt_axis in enumerate(np.eye(3)):
             found = False
             for joint in body['joint']:
                 if joint.get('@type') == 'free':
                     found = True
                 if not isinstance(joint, OrderedDict):
                     continue
-                if joint.get('@type') != 'slide':
+                if joint.get('@type') != 'slide' and joint.get('@type') != 'hinge':
                     continue
                 if '@axis' not in joint:
                     continue
                 axis = joint['@axis']
-                if np.linalg.norm(slide_axis - axis) < 1e-6:
+                if np.linalg.norm(jnt_axis - axis) < 1e-6:
                     joint_names.append(joint['@name'])
                     found = True
                     break  # Found axis
-            if not found:  # add this joint
+            if not found:  # If not found, add a slide joint
                 slide = OrderedDict()
                 joint_name = self.name + '_slide%d' % i
                 slide['@name'] = joint_name
                 slide['@type'] = 'slide'
-                slide['@axis'] = slide_axis
+                slide['@axis'] = jnt_axis
                 slide['@damping'] = '0.01'
                 slide['@pos'] = np.zeros(3)
                 body['joint'].append(slide)
