@@ -134,7 +134,7 @@ class Boxes(EnvModule):
 
         # obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
 
-        # print("Box obs shape: ", obs.shape)
+
         return obs
 
 
@@ -215,7 +215,6 @@ class Ramps(EnvModule):
 
         # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
 
-        # print("Ramp obs shape: ", obs.shape)
         return obs
 
 

@@ -39,8 +39,8 @@ class Base(PipelineEnv):
         Multi-agent Base Environment.
         Args:
             horizon (int): Number of steps agent gets to act
-            n_substeps (int): Number of internal mujoco steps per outer environment step;
-                essentially this is action repeat.
+            n_frames (int): the number of times to step the physics pipeline for each
+                environment step
             n_agents (int): number of agents in the environment
             floor_size (float or (float, float)): size of the floor. If a list of 2 floats, the floorsize
                 will be randomized between them on each episode
@@ -49,12 +49,12 @@ class Base(PipelineEnv):
     '''
     def __init__(
         self, 
-        horizon=250, 
-        n_substeps=5, 
+        horizon=100, 
+        n_frames=15, 
         n_agents=2, 
         floor_size=6., 
         grid_size=30,
-        action_lims=(-1.0, 1.0), 
+        action_lims=(-1.0, 1.0),
         deterministic_mode=False, 
         seed=1,
         backend='generalized',
@@ -62,24 +62,25 @@ class Base(PipelineEnv):
 
         sys = None
 
-        super().__init__(sys=sys, backend=backend, **kwargs)
+        super().__init__(sys=sys, backend=backend, n_frames=n_frames, **kwargs)
+
         self.n_agents = n_agents
         self.metadata = {}
         self.metadata['n_actors'] = n_agents
         self.metadata['n_agents'] = n_agents
         self.horizon = horizon
-        self.n_substeps = n_substeps
         self.floor_size = floor_size
         if not isinstance(floor_size, (tuple, list, np.ndarray)):
             self.floor_size_dist = [floor_size, floor_size]
         else:
             self.floor_size_dist = floor_size
         self.grid_size = grid_size
-        self.kwargs = kwargs
+
         self.placement_grid = np.zeros((grid_size, grid_size))
         self.modules = []
         self.q_indices = dict()
         self.qd_indices = dict()
+        self.deterministic_mode = deterministic_mode
 
         # Required for worldgen
         self._random_state = np.random.RandomState(seed)
@@ -143,15 +144,12 @@ class Base(PipelineEnv):
             Then populates the q and qp indices for each module.
         '''
         xml, self.init_dict, udd_callback = self._get_xml(seed)
-        self.sys = mjcf.loads(xml)
-
-        # init_q = jp.asarray(list(init_dict.values()))
-        self.init_q = jp.hstack(list(self.init_dict.values()))
-        # print('Init from joint positions: ', init_q)
-        self.init_qd = jp.zeros(self.sys.qd_size())
-
         with open("simple.xml", "w") as f:
             f.write(xml)
+        self.sys = mjcf.loads(xml)
+
+        self.init_q = jp.hstack(list(self.init_dict.values()))
+        self.init_qd = jp.zeros(self.sys.qd_size())
 
         # Store the joint indices for manipulation in observation step
         self._store_joint_indices(self.init_dict)
@@ -169,7 +167,7 @@ class Base(PipelineEnv):
         self.floor_size = np.random.uniform(self.floor_size_dist[0], self.floor_size_dist[1])
         self.metadata['floor_size'] = self.floor_size
         world_params = WorldParams(size=(self.floor_size, self.floor_size, 2.5),
-                                   num_substeps=self.n_substeps)
+                                   num_substeps=self._n_frames)
         successful_placement = False
         failures = 0
         while not successful_placement:
@@ -190,7 +188,7 @@ class Base(PipelineEnv):
 
     def set_info(self) -> Dict[str, Any]:
         """Sets the environment info."""
-        return {'in_prep_phase': False}
+        return {'in_prep_phase': True}
 
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
@@ -216,14 +214,13 @@ class Base(PipelineEnv):
         """
         pipeline_state0 = state.pipeline_state
 
-        
-        pipeline_state = self.pipeline_step(pipeline_state0, action.ravel())
+        pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
         obs = self._get_obs(pipeline_state)
 
-        return state.replace(pipeline_state=pipeline_state, obs=obs)
+        reward = jp.zeros(shape=(self.n_agents,))
 
-        # return state.replace(pipeline_state=pipeline_state, obs=obs)
+        return state.replace(pipeline_state=pipeline_state, obs=obs, reward=reward)
 
     @property
     def dt(self) -> jp.ndarray:

@@ -52,7 +52,7 @@ class TrackStatWrapper(MWrapper):
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
-        info = dst_state.info
+        info = deepcopy(dst_state.info)
 
         if self.n_food > 0:
             self.total_food_eaten += jp.sum(dst_state.obs['food_eat'])
