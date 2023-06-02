@@ -29,7 +29,7 @@ class Agents(EnvModule):
     '''
     @store_args
     def __init__(self, n_agents, placement_fn=None, color=None, friction=None,
-                 damp_z=False, polar_obs=True):
+                 damp_z=False, polar_obs=True, slide=False, arm=True):
         pass
 
     def build_world_step(self, env, floor, floor_size):
@@ -40,7 +40,10 @@ class Agents(EnvModule):
             env.metadata.pop(f"agent{i}_initpos", None)
 
         for i in range(self.n_agents):
-            obj = ObjFromXML("particle", name=f"agent{i}")
+            if self.slide:
+                obj = ObjFromXML("particle_slide", name=f"agent{i}")
+            else:
+                obj = ObjFromXML("particle", name=f"agent{i}")
             if self.friction is not None:
                 obj.add_transform(set_geom_attr_transform('friction', self.friction))
             if self.color is not None:
@@ -86,39 +89,22 @@ class Agents(EnvModule):
         qs = state.q.copy()
         qds = state.qd.copy()
 
+
         agent_q = qs[self.agent_q_idxs]
         agent_qd = qds[self.agent_qd_idxs]
+        
+        agent_q = jp.reshape(agent_q, newshape=(-1,3))
+        agent_qd = jp.reshape(agent_qd, newshape=(-1,3))
         # agent_angle = agent_q[:, [-1]] - np.pi / 2  # Rotate the angle to match visual front
         agent_q_qd = jp.concatenate([agent_q, agent_qd], -1)
         # polar_angle = jp.concatenate([np.cos(agent_angle), np.sin(agent_angle)], -1)
         # if self.polar_obs:
         #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
         # agent_angle = normalize_angles(agent_angle)
-        # obs = {
-        #     'agent_qpos_qvel': agent_qpos_qvel,
-        #     'agent_angle': agent_angle,
-        #     'agent_pos': agent_qpos[:, :3]}
+        obs = {
+            'agent_qpos_qvel': agent_q_qd,
+            # 'agent_angle': agent_angle,
+            'agent_pos': agent_q}
 
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
-        obs = agent_q_qd
-        print("Agent: ", obs.shape)
         return obs
-
-
-class AgentManipulation(EnvModule):
-    '''
-        Adding this module is necessary for the grabbing mechanic implemented in GrabObjWrapper
-        (found in mae_envs/wrappers/manipulation.py) to work correctly.
-    '''
-    @store_args
-    def __init__(self):
-        pass
-
-    def build_world_step(self, env, floor, floor_size):
-        for i in range(env.n_agents):
-            floor.add_transform(add_weld_equality_constraint_transform(
-                f'agent{i}:gripper', f'agent{i}:particle', 'floor0'))
-        return True
-
-    def cache_step(self, env):
-        self.eq_active[:] = 0

@@ -39,7 +39,7 @@ class Boxes(EnvModule):
     @store_args
     def __init__(self, n_boxes, n_elongated_boxes=0, placement_fn=None,
                  box_size=0.5, box_mass=1.0, friction=None, box_only_z_rot=False,
-                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=False):
+                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=True):
         if type(n_boxes) not in [tuple, list, np.ndarray]:
             self.n_boxes = [n_boxes, n_boxes]
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
@@ -102,16 +102,21 @@ class Boxes(EnvModule):
 
 
     def observation_step(self, state):
+        # Boxes have 6 qs (pos, rot) and 6 qds (vel, angv)
         qs = state.q.copy()
         qds = state.qd.copy()
+
 
         box_inds = jp.expand_dims(jp.arange(self.curr_n_boxes), -1)
         box_qs = qs[self.box_q_idxs]
         box_qds = qds[self.box_qd_idxs]
 
-        box_angle = normalize_angles(box_qs[:, 3:])
+        box_qs = jp.reshape(box_qs, newshape=(-1,7))
+        box_qds = jp.reshape(box_qds, newshape=(-1,6))
 
-        polar_angle = jp.concatenate([np.cos(box_angle), np.sin(box_angle)], -1)
+        box_angle = normalize_angles(box_qs[:, 4:])
+
+        polar_angle = jp.concatenate([jp.cos(box_angle), jp.sin(box_angle)], -1)
         if self.polar_obs:
             box_qs = jp.concatenate([box_qs[:, :3], polar_angle], -1)
         box_obs = jp.concatenate([box_qs, box_qds], -1)
@@ -121,8 +126,15 @@ class Boxes(EnvModule):
         if self.n_elongated_boxes[1] > 0 or self.boxsize_obs:
             box_obs = jp.concatenate([box_obs, self.box_size_array], -1)
 
-        obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
-        print("Box obs shape: ", obs.shape)
+
+
+        obs = {'box_obs': box_obs,
+        'box_angle': box_angle,
+        'box_pos': box_qs[:, :3]}
+
+        # obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
+
+
         return obs
 
 
@@ -140,7 +152,7 @@ class Ramps(EnvModule):
     '''
     @store_args
     def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=True,
-                 pad_ramp_size=False, free=False):
+                 pad_ramp_size=False, free=True):
         pass
 
     def build_world_step(self, env, floor, floor_size):
@@ -178,23 +190,31 @@ class Ramps(EnvModule):
 
 
     def observation_step(self, state):
+        # Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
         qs = state.q.copy()
         qds = state.qd.copy()
 
         ramp_qs = qs[self.ramp_q_idxs]
         ramp_qds = qds[self.ramp_qd_idxs]
-        ramp_angle = normalize_angles(ramp_qpos[:, 3:])
+
+        ramp_qs = jp.reshape(ramp_qs, newshape=(-1,7))
+        ramp_qds = jp.reshape(ramp_qds, newshape=(-1,6))
+
+        ramp_angle = normalize_angles(ramp_qs[:, 4:])
         polar_angle = jp.concatenate([jp.cos(ramp_angle), jp.sin(ramp_angle)], -1)
         if self.polar_obs:
-            ramp_qpos = jp.concatenate([ramp_qs[:, :3], polar_angle], -1)
+            ramp_qs = jp.concatenate([ramp_qs[:, :3], polar_angle], -1)
 
         ramp_obs = jp.concatenate([ramp_qs, ramp_qds], -1)
         if self.pad_ramp_size:
             ramp_obs = jp.concatenate([ramp_obs, jp.zeros((ramp_obs.shape[0], 3))], -1)
 
-        obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
+        obs = {'ramp_obs': ramp_obs,
+        'ramp_angle': ramp_angle,
+        'ramp_qpos': ramp_qs}
 
-        print("Ramp obs shape: ", obs.shape)
+        # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
+
         return obs
 
 

@@ -1,9 +1,9 @@
-import gym
-import numpy as np
-from mae_envs.wrappers.util import update_obs_space
+import jax
+import jax.numpy as jp
+from mae_envs.wrappers.util import ObservationWrapper
 
 
-class TeamMembership(gym.ObservationWrapper):
+class TeamMembership(ObservationWrapper):
     '''
         This wrapper just stores team membership information at initialization.
         The information is stored as a key in the self.metadata property, which ensures
@@ -32,22 +32,21 @@ class TeamMembership(gym.ObservationWrapper):
         if team_index is None:
             assert n_teams >= 1, "Number of teams must be at least 1"
             # split teams: 5 agents and 3 teams will result in team_index = [0,0,1,1,2]
-            team_index = np.array_split(np.arange(self.n_agents), n_teams)
-            team_index = np.concatenate([np.ones_like(ar) * i for i, ar in enumerate(team_index)])
+            team_index = jp.array_split(jp.arange(self.n_agents), n_teams)
+            team_index = jp.concatenate([jp.ones_like(ar) * i for i, ar in enumerate(team_index)])
 
         assert len(team_index) == self.n_agents, (
             "team_index parameter length must be equal to number of agents")
-        if isinstance(team_index, np.ndarray):
+        if isinstance(team_index, jp.ndarray):
             assert team_index.ndim == 1, (
                 "team_index parameter must be numpy array of dimension 1")
 
         # store in metadata property that gets automatically inherited
-        # make sure we copy value of team_index if it's a numpy array
-        self.metadata['team_index'] = np.array(team_index)
-        self.team_idx = np.array(team_index)
-        self.observation_space = update_obs_space(env, {'team_size': (self.n_agents, 1)})
+        # make sure we copy value of team_index if it's a jax-numpy array
+        self.metadata['team_index'] = jp.array(team_index)
+        self.team_idx = jp.array(team_index)
 
     def observation(self, obs):
-        obs['team_size'] = np.sum(self.team_idx[:, None] == self.team_idx[None, :],
+        obs['team_size'] = jp.sum(self.team_idx[:, None] == self.team_idx[None, :],
                                   axis=1, keepdims=True)
         return obs

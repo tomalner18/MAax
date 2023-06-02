@@ -2,7 +2,6 @@ import gym
 import numpy as np
 from worldgen.util.rotation import quat_from_angle_and_axis
 from worldgen.util.geometry import raycast
-from mae_envs.wrappers.util import update_obs_space
 
 
 class Lidar(gym.ObservationWrapper):
@@ -27,8 +26,8 @@ class Lidar(gym.ObservationWrapper):
         self.visualize_lidar = visualize_lidar
         self.n_agents = self.unwrapped.n_agents
 
-        self.observation_space = update_obs_space(
-            env, {'lidar': (self.n_agents, self.n_lidar_per_agent, 1)})
+        # self.observation_space = update_obs_space(
+        #     env, {'lidar': (self.n_agents, self.n_lidar_per_agent, 1)})
 
         # generate concentric lidar rays centered at origin
         self.lidar_angles = np.linspace(0, 2*np.pi, num=self.n_lidar_per_agent, endpoint=False)

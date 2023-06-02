@@ -1,6 +1,5 @@
 import gym
 import numpy as np
-from mae_envs.wrappers.util import update_obs_space
 from worldgen.util.types import store_args
 from gym.spaces import Tuple, MultiDiscrete
 
@@ -40,11 +39,11 @@ class FoodHealthWrapper(gym.Wrapper):
         self.curr_n_food = self.metadata['curr_n_food']
         self.max_food_size = self.metadata['food_size']
         food_dim = 5 if self.reward_scale_obs else 4
-        self.observation_space = update_obs_space(self.env, {'food_obs': (self.max_n_food, food_dim),
-                                                             'food_health': (self.max_n_food, 1),
-                                                             'food_eat': (self.max_n_food, 1)})
-        self.action_space.spaces['action_eat_food'] = Tuple([MultiDiscrete([2] * self.max_n_food)
-                                                             for _ in range(self.n_agents)])
+        # self.observation_space = update_obs_space(self.env, {'food_obs': (self.max_n_food, food_dim),
+        #                                                      'food_health': (self.max_n_food, 1),
+        #                                                      'food_eat': (self.max_n_food, 1)})
+        # self.action_space.spaces['action_eat_food'] = Tuple([MultiDiscrete([2] * self.max_n_food)
+        #                                                      for _ in range(self.n_agents)])
 
     def reset(self):
         obs = self.env.reset()

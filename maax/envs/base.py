@@ -28,39 +28,33 @@ from mae_envs.modules.objects import Boxes, Ramps
 class State:
     """MAax Environment state for training and inference."""
     pipeline_state: Optional[base.State]
-    obs: jp.ndarray
+    obs: Dict[str, jp.ndarray]
     reward: jp.ndarray
     done: jp.ndarray
     metrics: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
     info: Dict[str, Any] = struct.field(default_factory=dict) 
-    q_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    qd_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    action_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    obs_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    reward_indices: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
 
 class Base(PipelineEnv):
     '''
         Multi-agent Base Environment.
         Args:
             horizon (int): Number of steps agent gets to act
-            n_substeps (int): Number of internal mujoco steps per outer environment step;
-                essentially this is action repeat.
+            n_frames (int): the number of times to step the physics pipeline for each
+                environment step
             n_agents (int): number of agents in the environment
             floor_size (float or (float, float)): size of the floor. If a list of 2 floats, the floorsize
                 will be randomized between them on each episode
             grid_size (int): size of the grid that we'll use to place objects on the floor
-            action_lims (float tuple): lower and upper limit of mujoco actions
             deterministic_mode (bool): if True, seeds are incremented rather than randomly sampled.
     '''
     def __init__(
         self, 
-        horizon=250, 
-        n_substeps=5, 
+        horizon=100, 
+        n_frames=15, 
         n_agents=2, 
         floor_size=6., 
         grid_size=30,
-        action_lims=(-1.0, 1.0), 
+        action_lims=(-1.0, 1.0),
         deterministic_mode=False, 
         seed=1,
         backend='generalized',
@@ -68,22 +62,25 @@ class Base(PipelineEnv):
 
         sys = None
 
-        super().__init__(sys=sys, backend=backend, **kwargs)
+        super().__init__(sys=sys, backend=backend, n_frames=n_frames, **kwargs)
+
         self.n_agents = n_agents
         self.metadata = {}
         self.metadata['n_actors'] = n_agents
+        self.metadata['n_agents'] = n_agents
         self.horizon = horizon
-        self.n_substeps = n_substeps
+        self.floor_size = floor_size
         if not isinstance(floor_size, (tuple, list, np.ndarray)):
             self.floor_size_dist = [floor_size, floor_size]
         else:
             self.floor_size_dist = floor_size
         self.grid_size = grid_size
-        self.kwargs = kwargs
+
         self.placement_grid = np.zeros((grid_size, grid_size))
         self.modules = []
         self.q_indices = dict()
         self.qd_indices = dict()
+        self.deterministic_mode = deterministic_mode
 
         # Required for worldgen
         self._random_state = np.random.RandomState(seed)
@@ -97,9 +94,10 @@ class Base(PipelineEnv):
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = jp.array([])
-        # for module in self.modules:
-        #     obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
+        obs = {}
+        for module in self.modules:
+            # obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
+            obs.update(module.observation_step(pipeline_state))
         return obs
 
 
@@ -114,7 +112,6 @@ class Base(PipelineEnv):
             b_class = re.sub('\d+', '', body)
             joint = re.sub('\d+', '', joint)
             v = jp.asarray(v)
-
 
             # Q Assignment: based on class
             if b_class in self.q_indices:
@@ -146,21 +143,16 @@ class Base(PipelineEnv):
             Generates the brax system from the random seed.
             Then populates the q and qp indices for each module.
         '''
-        xml, init_dict, udd_callback = self._get_xml(seed)
-        self.sys = mjcf.loads(xml)
-
-
-        # init_q = jp.asarray(list(init_dict.values()))
-        self.init_q = jp.hstack(list(init_dict.values()))
-
-        # print('Init from joint positions: ', init_q)
-        self.init_qd = jp.zeros(self.sys.qd_size())
-
+        xml, self.init_dict, udd_callback = self._get_xml(seed)
         with open("simple.xml", "w") as f:
             f.write(xml)
+        self.sys = mjcf.loads(xml)
+
+        self.init_q = jp.hstack(list(self.init_dict.values()))
+        self.init_qd = jp.zeros(self.sys.qd_size())
 
         # Store the joint indices for manipulation in observation step
-        self._store_joint_indices(init_dict)
+        self._store_joint_indices(self.init_dict)
 
         # Cache the joint data in the modules for observation steps
         for module in self.modules:
@@ -175,7 +167,7 @@ class Base(PipelineEnv):
         self.floor_size = np.random.uniform(self.floor_size_dist[0], self.floor_size_dist[1])
         self.metadata['floor_size'] = self.floor_size
         world_params = WorldParams(size=(self.floor_size, self.floor_size, 2.5),
-                                   num_substeps=self.n_substeps)
+                                   num_substeps=self._n_frames)
         successful_placement = False
         failures = 0
         while not successful_placement:
@@ -194,27 +186,41 @@ class Base(PipelineEnv):
 
         return builder.get_xml()
 
+    def set_info(self) -> Dict[str, Any]:
+        """Sets the environment info."""
+        return {'in_prep_phase': True}
+
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
+        # init_q = jp.asarray(list(init_dict.values()))
+        init_q = jp.hstack(list(self.init_dict.values()))
+        # print('Init from joint positions: ', init_q)
+        init_qd = jp.zeros(self.sys.qd_size())
 
         pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
         obs = self._get_obs(pipeline_state)
-        reward, done, zero = jp.zeros(3)
+        reward = jp.zeros(shape=(self.n_agents,))
+        done, zero = jp.zeros(2)
+        info = self.set_info()
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, q_indices=self.q_indices, qd_indices=self.qd_indices)
+        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, info=info)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:
-        """Run one timestep of the environment's dynamics."""
+        """Run one timestep of the environment's dynamics.
+        Args:
+            state: current state of the environment.
+            action: action to take in the environment NOTE: Action arrives in shape (n_agents, action_size)
+        """
         pipeline_state0 = state.pipeline_state
-        
-        pipeline_state = self.pipeline_step(pipeline_state0, action)
+
+        pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
         obs = self._get_obs(pipeline_state)
 
-        return state.replace(pipeline_state=pipeline_state, obs=obs)
+        reward = jp.zeros(shape=(self.n_agents,))
 
-        # return state.replace(pipeline_state=pipeline_state, obs=obs)
+        return state.replace(pipeline_state=pipeline_state, obs=obs, reward=reward)
 
     @property
     def dt(self) -> jp.ndarray:

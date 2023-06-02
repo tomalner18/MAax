@@ -33,7 +33,7 @@ class EnvModule():
         '''
             Create any observations specific to this module.
             Args:
-                env (bra.env): the environment
+                env (brax.env): the environment
                 state (maax.state): the state
             Returns: dict of observations
         '''

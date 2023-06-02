@@ -2,183 +2,14 @@ import gym
 from gym.spaces import Discrete, MultiDiscrete, Tuple
 import numpy as np
 from worldgen.util.rotation import mat2quat
-from mae_envs.wrappers.util import update_obs_space
+from mae_envs.wrappers.util import MWrapper
 from mae_envs.util.geometry import dist_pt_to_cuboid
 from copy import deepcopy
 from itertools import compress
 
 
-class GrabObjWrapper(gym.Wrapper):
-    '''
-        Allows agents to grab an object using a weld constraint.
-        Args:
-            body_names (list): list of body names that the agent can grab
-            radius_multiplier (float): How far away can this be activated (multiplier on box size)
-            grab_dist (float): If set, the object is held at a specific distance during
-                                grabbing (default: None).
-                                Note: This does not work well with oblong objects
-            grab_exclusive (bool): If set true, each object can only be grabbed by
-                                a single agent. If several agents attempt to
-                                grab the same object, only the closer agents succeeds.
-            obj_in_game_metadata_keys (list of string): keys in metadata with boolean array saying
-                which objects are currently in the game. This is used in the event we are randomizing
-                number of objects
-    '''
-    def __init__(self, env, body_names, radius_multiplier=1.7,
-                 grab_dist=None, grab_exclusive=False,
-                 obj_in_game_metadata_keys=None):
-        super().__init__(env)
-        self.n_agents = self.unwrapped.n_agents
-        self.body_names = body_names
-        self.n_obj = len(body_names)
-        self.obj_in_game_metadata_keys = obj_in_game_metadata_keys
-        self.action_space.spaces['action_pull'] = (
-            Tuple([MultiDiscrete([2] * self.n_obj) for _ in range(self.n_agents)]))
 
-        self.observation_space = update_obs_space(
-            env, {'obj_pull': (self.n_obj, 1),
-                  'you_pull': (self.n_obj, self.n_agents)})
-
-        self.grab_radius = radius_multiplier * self.metadata['box_size']
-        self.grab_dist = grab_dist
-        self.grab_exclusive = grab_exclusive
-
-    def observation(self, obs):
-        obs['you_pull'] = self.obj_grabbed.T
-        obs['obj_pull'] = np.any(obs['you_pull'], axis=-1, keepdims=True)
-        return obs
-
-    def reset(self):
-        obs = self.env.reset()
-        sim = self.unwrapped.sim
-
-        if self.obj_in_game_metadata_keys is not None:
-            self.actual_body_slice = np.concatenate([self.metadata[k] for k in self.obj_in_game_metadata_keys])
-        else:
-            self.actual_body_slice = np.ones((len(self.body_names))).astype(np.bool)
-        actual_body_names = list(compress(self.body_names, self.actual_body_slice))
-        self.n_obj = len(actual_body_names)
-
-        # Cache body ids
-        self.obj_body_idxs = np.array([sim.model.body_name2id(body_name) for body_name in actual_body_names])
-        self.agent_body_idxs = np.array([sim.model.body_name2id(f"agent{i}:particle") for i in range(self.n_agents)])
-
-        # Cache geom ids
-        self.obj_geom_ids = np.array([sim.model.geom_name2id(body_name) for body_name in actual_body_names])
-        self.agent_geom_ids = np.array([sim.model.geom_name2id(f'agent{i}:agent') for i in range(self.n_agents)])
-
-        # Cache constraint ids
-        self.agent_eq_ids = np.array(
-            [i for i, obj1 in enumerate(sim.model.eq_obj1id)
-             if sim.model.body_names[obj1] == f"agent{i}:particle"])
-        assert len(self.agent_eq_ids) == self.n_agents
-
-        # turn off equality constraints
-        sim.model.eq_active[self.agent_eq_ids] = 0
-        self.obj_grabbed = np.zeros((self.n_agents, self.n_obj), dtype=bool)
-        self.last_obj_grabbed = np.zeros((self.n_agents, self.n_obj), dtype=bool)
-
-        return self.observation(obs)
-
-    def grab_obj(self, action):
-        '''
-            Implements object grabbing for all agents
-            Args:
-                action: Action dictionary
-        '''
-        action_pull = action['action_pull'][:, self.actual_body_slice]
-        sim = self.unwrapped.sim
-
-        agent_pos = sim.data.body_xpos[self.agent_body_idxs]
-        obj_pos = sim.data.body_xpos[self.obj_body_idxs]
-
-        obj_width = sim.model.geom_size[self.obj_geom_ids]
-        obj_quat = sim.data.body_xquat[self.obj_body_idxs]
-        assert len(obj_width) == len(obj_quat), (
-            "Number of object widths must be equal to number of quaternions for direct distance calculation method. " +
-            "This might be caused by a body that contains several geoms.")
-        obj_dist = dist_pt_to_cuboid(agent_pos, obj_pos, obj_width, obj_quat)
-
-        allowed_and_desired = np.logical_and(action_pull, obj_dist <= self.grab_radius)
-        obj_dist_masked = obj_dist.copy()  # Mask the obj dists to find a valid argmin
-        obj_dist_masked[~allowed_and_desired] = np.inf
-
-        if self.grab_exclusive:
-            closest_obj = np.zeros((self.n_agents,), dtype=int)
-
-            while np.any(obj_dist_masked < np.inf):
-                # find agent and object of closest object distance
-                agent_idx, obj_idx = np.unravel_index(np.argmin(obj_dist_masked), obj_dist_masked.shape)
-                # set closest object for this agent
-                closest_obj[agent_idx] = obj_idx
-                # ensure exclusivity of grabbing
-                obj_dist_masked[:, obj_idx] = np.inf
-                obj_dist_masked[agent_idx, :] = np.inf
-                # mark same object as undesired for all other agents
-                allowed_and_desired[:agent_idx, obj_idx] = False
-                allowed_and_desired[(agent_idx + 1):, obj_idx] = False
-        else:
-            closest_obj = np.argmin(obj_dist_masked, axis=-1)
-
-        valid_grabs = np.any(allowed_and_desired, axis=-1)  # (n_agent,) which agents have valid grabs
-
-        # Turn on/off agents with valid grabs
-        sim.model.eq_active[self.agent_eq_ids] = valid_grabs
-        sim.model.eq_obj2id[self.agent_eq_ids] = self.obj_body_idxs[closest_obj]
-
-        # keep track of which object is being grabbed
-        self.obj_grabbed = np.zeros((self.n_agents, self.n_obj), dtype=bool)
-        agent_with_valid_grab = np.argwhere(valid_grabs)[:, 0]
-        self.obj_grabbed[agent_with_valid_grab, closest_obj[agent_with_valid_grab]] = 1
-
-        # If there are new grabs, then setup the weld constraint parameters
-        new_grabs = np.logical_and(
-            valid_grabs, np.any(self.obj_grabbed != self.last_obj_grabbed, axis=-1))
-        for agent_idx in np.argwhere(new_grabs)[:, 0]:
-            agent_rot = sim.data.body_xmat[self.agent_body_idxs[agent_idx]].reshape((3, 3))
-            obj_rot = sim.data.body_xmat[self.obj_body_idxs[closest_obj[agent_idx]]].reshape((3, 3))
-            # Need to use the geom xpos rather than the qpos
-            obj_pos = sim.data.body_xpos[self.obj_body_idxs[closest_obj[agent_idx]]]
-            agent_pos = sim.data.body_xpos[self.agent_body_idxs[agent_idx]]
-
-            grab_vec = agent_pos - obj_pos
-
-            if self.grab_dist is not None:
-                grab_vec = self.grab_dist / (1e-3 + np.linalg.norm(grab_vec)) * grab_vec
-
-            # The distance constraint needs to be rotated into the frame of reference of the agent
-            sim.model.eq_data[self.agent_eq_ids[agent_idx], :3] = np.matmul(agent_rot.T, grab_vec)
-            # The angle constraint is the difference between the agents frame and the objects frame
-            sim.model.eq_data[self.agent_eq_ids[agent_idx], 3:] = mat2quat(np.matmul(agent_rot.T, obj_rot))
-
-        self.last_obj_grabbed = self.obj_grabbed
-
-    def step(self, action):
-        self.grab_obj(action)
-        obs, rew, done, info = self.env.step(action)
-        return self.observation(obs), rew, done, info
-
-
-class GrabClosestWrapper(gym.ActionWrapper):
-    '''
-        Convert the action_pull (either grab or pull) to a binary action rather than having the
-            dimension of boxes. The grab wrapper will only grab the closest box, so we convert
-            the new action into an all 1's action.
-    '''
-    def __init__(self, env):
-        super().__init__(env)
-        self.action_space = deepcopy(self.action_space)
-        self.n_obj = len(self.action_space.spaces['action_pull'].spaces[0].nvec)
-        self.action_space.spaces['action_pull'] = (
-            Tuple([Discrete(2) for _ in range(self.unwrapped.n_agents)]))
-
-    def action(self, action):
-        action = deepcopy(action)
-        action['action_pull'] = np.repeat(action['action_pull'][:, None], self.n_obj, -1)
-        return action
-
-
-class LockObjWrapper(gym.Wrapper):
+class LockObjWrapper(MWrapper):
     '''
         Allows agents to lock objects at their current position.
         Args:
@@ -214,11 +45,11 @@ class LockObjWrapper(gym.Wrapper):
         self.ac_obs_prefix = ac_obs_prefix
         self.obj_in_game_metadata_keys = obj_in_game_metadata_keys
         self.agent_allowed_to_lock_keys = agent_allowed_to_lock_keys
-        self.action_space.spaces[f'action_{ac_obs_prefix}glue'] = (
-            Tuple([MultiDiscrete([2] * self.n_obj) for _ in range(self.n_agents)]))
-        self.observation_space = update_obs_space(env, {f'{ac_obs_prefix}obj_lock': (self.n_obj, 1),
-                                                        f'{ac_obs_prefix}you_lock': (self.n_agents, self.n_obj, 1),
-                                                        f'{ac_obs_prefix}team_lock': (self.n_agents, self.n_obj, 1)})
+        # self.action_space.spaces[f'action_{ac_obs_prefix}glue'] = (
+        #     Tuple([MultiDiscrete([2] * self.n_obj) for _ in range(self.n_agents)]))
+        # self.observation_space = update_obs_space(env, {f'{ac_obs_prefix}obj_lock': (self.n_obj, 1),
+        #                                                 f'{ac_obs_prefix}you_lock': (self.n_agents, self.n_obj, 1),
+        #                                                 f'{ac_obs_prefix}team_lock': (self.n_agents, self.n_obj, 1)})
         self.lock_radius = radius_multiplier*self.metadata['box_size']
         self.obj_locked = np.zeros((self.n_obj,), dtype=int)
 

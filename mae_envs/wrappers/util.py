@@ -24,19 +24,11 @@ from typing import (
 )
 
 
-def update_obs_space(env, delta):
-    spaces = env.observation_space.spaces.copy()
-    for key, shape in delta.items():
-        spaces[key] = Box(-np.inf, np.inf, shape, np.float32)
-    return Dict(spaces)
-
-class MWrapper(Env):
+class MWrapper(Base):
     """Wraps the environment to allow modular transformations."""
 
     def __init__(self, env: Env):
-        super().__init__(config=None)
         self.env = env
-
         self._metadata: Optional[dict] = None
 
     def reset(self, rng: jp.ndarray) -> State:
@@ -44,6 +36,9 @@ class MWrapper(Env):
 
     def step(self, state: State, action: jp.ndarray) -> State:
         return self.env.step(state, action)
+
+    def gen_sys(self, seed):
+        self.env.gen_sys(seed)
 
     @property
     def observation_size(self) -> int:
@@ -62,11 +57,26 @@ class MWrapper(Env):
         return self.unwrapped.backend
 
     @property
+    def metadata(self) -> dict:
+        """Returns the environment metadata."""
+        if self._metadata is None:
+            return self.env.metadata
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, value):
+        self._metadata = value
+
+    @classmethod
+    def class_name(cls):
+        """Returns the class name of the wrapper."""
+        return cls.__name__
 
     def __getattr__(self, name):
         if name == '__setstate__':
             raise AttributeError(name)
         return getattr(self.env, name)
+
 
 class RewardWrapper(MWrapper):
     """Superclass of wrappers that can modify the returning reward from a step.
@@ -100,15 +110,15 @@ class ObservationWrapper(MWrapper):
 
     """
 
-    def reset(self, **kwargs):
+    def reset(self, rng):
         """Resets the environment, returning a state with modified observation using :meth:`self.observation`."""
-        state = self.env.reset(**kwargs)
+        state = self.env.reset(rng)
         return state.replace(obs=self.observation(state.obs))
 
     def step(self, state, action):
         """Returns a modified observation using :meth:`self.observation` after calling :meth:`env.step`."""
         dst_state = self.env.step(state, action)
-        obs = self.observation(state)
+        obs = self.observation(state.obs)
         return dst_state.replace(obs=obs)
 
     def observation(self, observation):
@@ -139,52 +149,19 @@ class ActionWrapper(MWrapper):
         raise NotImplementedError
 
 
-class NumpyArrayRewardWrapper(gym.RewardWrapper):
+class JPArrayRewardWrapper(RewardWrapper):
     """
         Convenience wrapper that casts rewards to the multiagent format
-        (numpy array of shape (n_agents,))
+        (jax-numpy array of shape (n_agents,))
     """
     def __init__(self, env):
         super().__init__(env)
 
     def reward(self, rew):
-        return np.zeros((self.unwrapped.n_agents,)) + rew
+        return jp.zeros((self.unwrapped.n_agents,)) + rew
 
 
-class DiscretizeActionWrapper(gym.ActionWrapper):
-    '''
-        Take a Box action and convert it to a MultiDiscrete Action through quantization
-        Args:
-            action_key: (string) action to discretize
-            nbuckets: (int) number of discrete actions per dimension. It should be odd such
-                        that actions centered around 0 will have the middle action be 0.
-    '''
-    def __init__(self, env, action_key, nbuckets=11):
-        super().__init__(env)
-        self.action_key = action_key
-        self.discrete_to_continuous_act_map = []
-        for i, ac_space in enumerate(self.action_space.spaces[action_key].spaces):
-            assert isinstance(ac_space, Box)
-            action_map = np.array([np.linspace(low, high, nbuckets)
-                                   for low, high in zip(ac_space.low, ac_space.high)])
-            _nbuckets = np.ones((len(action_map))) * nbuckets
-            self.action_space.spaces[action_key].spaces[i] = gym.spaces.MultiDiscrete(_nbuckets)
-            self.discrete_to_continuous_act_map.append(action_map)
-        self.discrete_to_continuous_act_map = np.array(self.discrete_to_continuous_act_map)
-
-    def action(self, state, action):
-        action = deepcopy(action)
-        ac = action[self.action_key]
-
-        # helper variables for indexing the discrete-to-continuous action map
-        agent_idxs = np.tile(np.arange(ac.shape[0])[:, None], ac.shape[1])
-        ac_idxs = np.tile(np.arange(ac.shape[1]), ac.shape[0]).reshape(ac.shape)
-
-        action[self.action_key] = self.discrete_to_continuous_act_map[agent_idxs, ac_idxs, ac]
-        return action
-
-
-class MaskActionWrapper(gym.Wrapper):
+class MaskActionWrapper(MWrapper):
     '''
         For a boolean action, sets it to zero given a mask from the previous step.
             For example you could mask the grab action based on whether you can see the box
@@ -199,18 +176,20 @@ class MaskActionWrapper(gym.Wrapper):
         self.action_key = action_key
         self.mask_keys = mask_keys
 
-    def reset(self):
-        self.prev_obs = self.env.reset()
-        return deepcopy(self.prev_obs)
+    def reset(self, rng):
+        state = self.env.reset(rng)
+        self.prev_obs = deepcopy(state.obs)
+        return state
 
-    def step(self, action):
-        mask = np.concatenate([self.prev_obs[k] for k in self.mask_keys], -1)
-        action[self.action_key] = np.logical_and(action[self.action_key], mask)
-        self.prev_obs, rew, done, info = self.env.step(action)
-        return deepcopy(self.prev_obs), rew, done, info
+    def step(self, state, action):
+        mask = jp.concatenate([self.prev_obs[k] for k in self.mask_keys], -1)
+        action[self.action_key] = jp.logical_and(action[self.action_key], mask)
+        dst_state = self.env.step(state, action)
+        dst_state = dst_state.replace(obs=deepcopy(self.prev_obs))
+        return dst_state
 
 
-class AddConstantObservationsWrapper(gym.ObservationWrapper):
+class AddConstantObservationsWrapper(ObservationWrapper):
     '''
         Adds new constant observations to the environment.
         Args:
@@ -220,12 +199,10 @@ class AddConstantObservationsWrapper(gym.ObservationWrapper):
         super().__init__(env)
         self.new_obs = new_obs
         for obs_key in self.new_obs:
-            assert obs_key not in self.observation_space.spaces, (
-                f'Observation key {obs_key} exists in original observation space')
             if type(self.new_obs[obs_key]) in [list, tuple]:
-                self.new_obs[obs_key] = np.array(self.new_obs[obs_key])
+                self.new_obs[obs_key] = jp.array(self.new_obs[obs_key])
             shape = self.new_obs[obs_key].shape
-            self.observation_space = update_obs_space(self, {obs_key: shape})
+            # self.observation_space = update_obs_space(self, {obs_key: shape})
 
     def observation(self, obs):
         for key, val in self.new_obs.items():
@@ -233,7 +210,7 @@ class AddConstantObservationsWrapper(gym.ObservationWrapper):
         return obs
 
 
-class SpoofEntityWrapper(gym.ObservationWrapper):
+class SpoofEntityWrapper(ObservationWrapper):
     '''
         Add extra entities along entity dimension such that shapes can match between
             environments with differing number of entities. This is meant to be used
@@ -249,29 +226,29 @@ class SpoofEntityWrapper(gym.ObservationWrapper):
         self.total_n_entities = total_n_entities
         self.keys = keys
         self.mask_keys = mask_keys
-        for key in self.keys + self.mask_keys:
-            shape = list(self.observation_space.spaces[key].shape)
-            shape[1] = total_n_entities
-            self.observation_space = update_obs_space(self, {key: shape})
-        for key in self.mask_keys:
-            shape = list(self.observation_space.spaces[key].shape)
-            self.observation_space = update_obs_space(self, {key + '_spoof': shape})
+        # for key in self.keys + self.mask_keys:
+        #     shape = list(self.observation_space.spaces[key].shape)
+        #     shape[1] = total_n_entities
+        #     self.observation_space = update_obs_space(self, {key: shape})
+        # for key in self.mask_keys:
+        #     shape = list(self.observation_space.spaces[key].shape)
+        #     self.observation_space = update_obs_space(self, {key + '_spoof': shape})
 
     def observation(self, obs):
         for key in self.keys:
             n_to_spoof = self.total_n_entities - obs[key].shape[1]
             if n_to_spoof > 0:
-                obs[key] = np.concatenate([obs[key], np.zeros((obs[key].shape[0], n_to_spoof, obs[key].shape[-1]))], 1)
+                obs[key] = jp.concatenate([obs[key], jp.zeros((obs[key].shape[0], n_to_spoof, obs[key].shape[-1]))], 1)
         for key in self.mask_keys:
             n_to_spoof = self.total_n_entities - obs[key].shape[1]
-            obs[key + '_spoof'] = np.concatenate([np.ones_like(obs[key]), np.zeros((obs[key].shape[0], n_to_spoof))], -1)
+            obs[key + '_spoof'] = jp.concatenate([jp.ones_like(obs[key]), jp.zeros((obs[key].shape[0], n_to_spoof))], -1)
             if n_to_spoof > 0:
-                obs[key] = np.concatenate([obs[key], np.zeros((obs[key].shape[0], n_to_spoof))], -1)
+                obs[key] = jp.concatenate([obs[key], jp.zeros((obs[key].shape[0], n_to_spoof))], -1)
 
         return obs
 
 
-class ConcatenateObsWrapper(gym.ObservationWrapper):
+class ConcatenateObsWrapper(ObservationWrapper):
     '''
         Group multiple observations under the same key in the observation dictionary.
         Args:
@@ -280,16 +257,7 @@ class ConcatenateObsWrapper(gym.ObservationWrapper):
     def __init__(self, env, obs_groups):
         super().__init__(env)
         self.obs_groups = obs_groups
-        for key_to_save, keys_to_concat in obs_groups.items():
-            assert np.all([np.array(self.observation_space.spaces[keys_to_concat[0]].shape[:-1]) ==
-                           np.array(self.observation_space.spaces[k].shape[:-1])
-                           for k in keys_to_concat]), \
-                f"Spaces were {[(k, v) for k, v in self.observation_space.spaces.items() if k in keys_to_concat]}"
-            new_last_dim = sum([self.observation_space.spaces[k].shape[-1] for k in keys_to_concat])
-            new_shape = list(self.observation_space.spaces[keys_to_concat[0]].shape[:-1]) + [new_last_dim]
-            self.observation_space = update_obs_space(self, {key_to_save: new_shape})
-
     def observation(self, obs):
         for key_to_save, keys_to_concat in self.obs_groups.items():
-            obs[key_to_save] = np.concatenate([obs[k] for k in keys_to_concat], -1)
+            obs[key_to_save] = jp.concatenate([obs[k] for k in keys_to_concat], -1)
         return obs
