@@ -56,8 +56,11 @@ class PreparationPhase(MWrapper):
         )
         print('In prep phase: ', self.in_prep_phase)
 
-        info = deepcopy(dst_state.info)
+        info = dst_state.info
+
         info['in_prep_phase'] = self.in_prep_phase
+
+        print(info)
 
         obs = self.observation(dst_state.obs)
 
@@ -65,12 +68,12 @@ class PreparationPhase(MWrapper):
 
 
 class NoActionsInPrepPhase(MWrapper):
-    '''Agents have all actions turned off during preparation phase.
-        For MultiDiscrete and Discrete, assumes zero action is the rounded down middle action'''
+    '''Disabled actions for indexed agents  during preparation phase.'''
 
     def __init__(self, env, agent_idxs):
         super().__init__(env)
         self.agent_idxs =jp.array(agent_idxs)
+        print(agent_idxs)
 
     def reset(self, rng):
         state = self.env.reset(rng)
@@ -83,16 +86,15 @@ class NoActionsInPrepPhase(MWrapper):
         return dst_state
 
     def action(self, action):
-        ac = deepcopy(action)
-        print('Action before: ', ac)
+        print('Action before: ', action)
         # print('In prep phase: ', self.in_prep_phase)
 
         zero_ac = 0.0
 
         ac = jax.lax.cond(
             self.in_prep_phase,
-            lambda: ac.at[self.agent_idxs].set(zero_ac),
-            lambda: ac
+            lambda: action.at[self.agent_idxs].set(jp.zeros(action.shape[1])),
+            lambda: action
         )
 
         print('Action after: ', ac)
