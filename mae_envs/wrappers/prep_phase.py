@@ -15,55 +15,47 @@ class PreparationPhase(MWrapper):
         self.prep_fraction = prep_fraction
         self.prep_time = self.prep_fraction * self.unwrapped.horizon
         self.n_agents = self.metadata['n_agents']
-        self.step_counter = 0
+
 
     def reset(self, rng):
-        self.step_counter = 0
-        self.in_prep_phase = True
         state = self.env.reset(rng)
-        obs = self.observation(state.obs)
-        return state.replace(obs=obs)
+        obs = self.observation(state)
+        info = state.info
+        info['in_prep_phase'] = True
+        return state.replace(obs=obs, info=info)
 
-    def reward(self, reward):
+    def reward(self, state):
+        reward = state.reward
         reward = jax.lax.cond(
-            self.in_prep_phase,
+            state.info['in_prep_phase'],
             lambda _: jp.zeros_like(reward),
             lambda _: reward,
             operand=None
         )
-
-        print('Reward: ', reward)
         return reward
 
-    def observation(self, obs):
+    def observation(self, state):
+        obs = state.obs
         obs['prep_obs'] = (jp.ones((self.n_agents, 1)) *
-                           jp.minimum(1.0, self.step_counter / (self.prep_time + 1e-5)))
+                           jp.minimum(1.0, state.info['in_prep_phase'] / (self.prep_time + 1e-5)))
 
         return obs
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
-        rew = self.reward(dst_state.reward)
-        self.step_counter += 1
-        print('Step counter: ', self.step_counter)
-        print('Prep time: ', self.prep_time)
+        rew = self.reward(dst_state)
 
-        self.in_prep_phase = jax.lax.cond(
-            self.step_counter < self.prep_time,
+        info = dst_state.info
+
+        info['in_prep_phase'] = jax.lax.cond(
+            dst_state.step < self.prep_time,
             lambda _: True,
             lambda _: False,
             operand=None
         )
-        print('In prep phase: ', self.in_prep_phase)
 
-        info = dst_state.info
 
-        info['in_prep_phase'] = self.in_prep_phase
-
-        print(info)
-
-        obs = self.observation(dst_state.obs)
-
+        obs = self.observation(dst_state)
         return dst_state.replace(obs=obs, reward=rew, info=info)
 
 
@@ -73,31 +65,22 @@ class NoActionsInPrepPhase(MWrapper):
     def __init__(self, env, agent_idxs):
         super().__init__(env)
         self.agent_idxs =jp.array(agent_idxs)
-        print(agent_idxs)
 
     def reset(self, rng):
         state = self.env.reset(rng)
-        self.in_prep_phase = True
         return state
 
     def step(self, state, action):
-        dst_state = self.env.step(state, self.action(action))
-        self.in_prep_phase = state.info['in_prep_phase'].astype(bool)
+        dst_state = self.env.step(state, self.action(state, action))
         return dst_state
 
-    def action(self, action):
-        print('Action before: ', action)
-        # print('In prep phase: ', self.in_prep_phase)
-
+    def action(self, state, action):
         zero_ac = 0.0
-
         ac = jax.lax.cond(
-            self.in_prep_phase,
+            state.info['in_prep_phase'],
             lambda: action.at[self.agent_idxs].set(jp.zeros(action.shape[1])),
             lambda: action
         )
-
-        print('Action after: ', ac)
         return ac
 
 
@@ -118,5 +101,5 @@ class MaskPrepPhaseAction(MWrapper):
         action[self.action_key] = (action[self.action_key] * (1 - self.in_prep_phase)).astype(bool)
 
         dst_state = self.env.step(state, action)
-        self.in_prep_phase = state.info['in_prep_phase'].astype(bool)
-        return state
+        self.in_prep_phase = dst_state.info['in_prep_phase'].astype(bool)
+        return dst_state

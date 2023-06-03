@@ -162,7 +162,7 @@ class HideAndSeekRewardWrapper(MWrapper):
             assert False, f'Hide and Seek reward type {self.rew_type} is not implemented'
 
         this_rew = jp.multiply(this_rew, self.reward_scale)
-        this_rew = jp.add(this_rew, dst_state.reward)
+        # this_rew = jp.add(this_rew, dst_state.reward)
         return dst_state.replace(reward=this_rew)
 
 

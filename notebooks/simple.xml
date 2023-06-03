@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-	<compiler angle="radian" coordinate="local" meshdir="/rds/general/user/tla19/home/FYP/MAax/assets/stls" texturedir="/rds/general/user/tla19/home/FYP/MAax/assets/textures"></compiler>
+	<compiler angle="radian" coordinate="local" meshdir="/Users/tom/dev/imperial/FYP/MAax/assets/stls" texturedir="/Users/tom/dev/imperial/FYP/MAax/assets/textures"></compiler>
 	<option timestep="0.005">
 		<flag warmstart="enable"></flag>
 	</option>
 	<worldbody>
-		<geom name="floor0" pos="3 3 0" size="3 3 1" type="plane" condim="3" friction="0.2"></geom>
+		<geom name="floor0" pos="3 3 0" size="3 3 1" type="plane" condim="3"></geom>
 		<body name="floor0" pos="3 3 0"></body>
 		<body name="wall0" pos="0.05 2.85 1.5">
 			<joint name="wall0_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
@@ -27,22 +27,11 @@
 			<joint name="wall3_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall3" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
-		<body name="wall4" pos="0.05 0.35 0.25">
+		<body name="wall4" pos="0.05 1.15 0.25">
 			<joint name="wall4_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall4_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 0.35 0.25" type="box" condim="3" name="wall4" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+			<geom size="0.05 1.15 0.25" type="box" condim="3" name="wall4" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
 		</body>
-<<<<<<< HEAD
-		<body name="wall5" pos="0.05 0.75 0.25">
-			<joint name="wall5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 0.75 0.25" type="box" condim="3" name="wall5" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
-		</body>
-		<body name="wall6" pos="1.05 0.05 0.25">
-			<joint name="wall6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="1.05 0.05 0.25" type="box" condim="3" name="wall6" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
-=======
 		<body name="wall5" pos="0.75 0.05 0.25">
 			<joint name="wall5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
@@ -52,7 +41,6 @@
 			<joint name="wall6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<joint name="wall6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.25 0.05 0.25" type="box" condim="3" name="wall6" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
->>>>>>> 4a2abc3f73cb49fe264f44e89df1794891e2638e
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent0_agent0">
 			<joint axis="1 0 0" damping="0.01" name="agent0_slide0" pos="0 0 0" type="slide"></joint>
@@ -81,6 +69,10 @@
 		<body name="moveable-box0" pos="0.25 0.25 0.25">
 			<joint type="free" name="moveable-box0_free" damping="0.01" pos="0 0 0"></joint>
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box0" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		</body>
+		<body name="moveable-box1" pos="0.25 0.25 0.25">
+			<joint type="free" name="moveable-box1_free" damping="0.01" pos="0 0 0"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
 			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" friction="0.01"></geom>

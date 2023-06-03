@@ -94,7 +94,7 @@ class RewardWrapper(MWrapper):
         reward = self.reward(dst_state.reward)
         return dst_state.replace(reward=reward)
 
-    def reward(self, reward):
+    def reward(self, state):
         """Returns a modified ``reward``."""
         raise NotImplementedError
 
@@ -121,7 +121,7 @@ class ObservationWrapper(MWrapper):
         obs = self.observation(state.obs)
         return dst_state.replace(obs=obs)
 
-    def observation(self, observation):
+    def observation(self, state):
         """Returns a modified observation."""
         raise NotImplementedError
 

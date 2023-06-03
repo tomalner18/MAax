@@ -31,8 +31,10 @@ class State:
     obs: Dict[str, jp.ndarray]
     reward: jp.ndarray
     done: jp.ndarray
+    step: int = 0
     metrics: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    info: Dict[str, Any] = struct.field(default_factory=dict) 
+    info: Dict[str, Any] = struct.field(default_factory=dict),
+
 
 class Base(PipelineEnv):
     '''
@@ -188,7 +190,8 @@ class Base(PipelineEnv):
 
     def set_info(self) -> Dict[str, Any]:
         """Sets the environment info."""
-        return {'in_prep_phase': True}
+        return {'in_prep_phase': True,
+                'step_count': 0}
 
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
@@ -218,9 +221,9 @@ class Base(PipelineEnv):
 
         obs = self._get_obs(pipeline_state)
 
-        reward = jp.zeros(shape=(self.n_agents,))
+        step = state.step + 1
 
-        return state.replace(pipeline_state=pipeline_state, obs=obs, reward=reward)
+        return state.replace(pipeline_state=pipeline_state, obs=obs, step=step)
 
     @property
     def dt(self) -> jp.ndarray:
