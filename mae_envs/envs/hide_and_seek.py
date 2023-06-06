@@ -22,7 +22,7 @@ from mae_envs.modules.walls import RandomWalls, WallScenarios
 from mae_envs.modules.objects import Boxes, Ramps, LidarSites
 from mae_envs.modules.food import Food
 from mae_envs.modules.world import FloorAttributes, WorldConstants
-from mae_envs.modules.util import (uniform_placement, close_to_other_object_placement,
+from mae_envs.modules.util import (uniform_placement, proximity_placement,
                                    uniform_placement_middle)
 
 
@@ -278,7 +278,7 @@ def outside_quadrant_placement(grid, obj_size, metadata, random_state):
 
 #             env.metadata['hiders_together_radius'] = htr_in_cells
 
-#             close_to_first_hider_placement = close_to_other_object_placement(
+#             close_to_first_hider_placement = proximity_placement(
 #                                                 "agent", 0, "hiders_together_radius")
 
 #             agent_placement_fn = [first_hider_placement] + \
@@ -293,7 +293,7 @@ def outside_quadrant_placement(grid, obj_size, metadata, random_state):
 
 #             env.metadata['seekers_together_radius'] = str_in_cells
 
-#             close_to_first_seeker_placement = close_to_other_object_placement(
+#             close_to_first_seeker_placement = proximity_placement(
 #                                                 "agent", n_hiders, "seekers_together_radius")
 
 #             agent_placement_fn += [first_seeker_placement] + \

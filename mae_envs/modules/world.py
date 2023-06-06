@@ -1,22 +1,22 @@
 import logging
 from worldgen.transforms import set_geom_attr_transform
-from mae_envs.modules import EnvModule
+from mae_envs.modules import Module
 
 
-class FloorAttributes(EnvModule):
+class FloorAttributes(Module):
     '''
         For each (key, value) in kwargs, sets the floor geom attribute key to value.
     '''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         for k, v in self.kwargs.items():
             floor.add_transform(set_geom_attr_transform(k, v))
         return True
 
 
-class WorldConstants(EnvModule):
+class WorldConstants(Module):
     '''
         For each (key, value) in kwargs, sets env.sys.[key] = value
     '''

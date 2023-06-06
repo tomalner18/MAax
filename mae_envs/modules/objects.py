@@ -6,13 +6,13 @@ from worldgen import Geom, Material, ObjFromXML
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import remove_hinge_axis_transform
-from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
+from mae_envs.modules import Module, rejection_placement, get_size_from_xml
 
 import jax
 from jax import numpy as jp
 
 
-class Boxes(EnvModule):
+class Boxes(Module):
     '''
     Add moveable boxes to the environment.
         Args:
@@ -45,7 +45,7 @@ class Boxes(EnvModule):
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
             self.n_elongated_boxes = [n_elongated_boxes, n_elongated_boxes]
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         env.metadata['box_size'] = self.box_size
 
         self.curr_n_boxes = env._random_state.randint(self.n_boxes[0], self.n_boxes[1] + 1)
@@ -138,7 +138,7 @@ class Boxes(EnvModule):
         return obs
 
 
-class Ramps(EnvModule):
+class Ramps(Module):
     '''
     Add moveable ramps to the environment.
         Args:
@@ -155,7 +155,7 @@ class Ramps(EnvModule):
                  pad_ramp_size=False, free=True):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         successful_placement = True
 
         env.metadata['curr_n_ramps'] = np.ones((self.n_ramps)).astype(bool)
@@ -218,7 +218,7 @@ class Ramps(EnvModule):
         return obs
 
 
-class Cylinders(EnvModule):
+class Cylinders(Module):
     '''
         Add cylinders to the environment.
         Args:
@@ -243,7 +243,7 @@ class Cylinders(EnvModule):
         if type(height) not in [list, np.ndarray]:
             self.height = [height, height]
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         default_name = 'static_cylinder' if self.make_static else 'moveable_cylinder'
         diameter = env._random_state.uniform(self.diameter[0], self.diameter[1])
         height = env._random_state.uniform(self.height[0], self.height[1])
@@ -298,7 +298,7 @@ class Cylinders(EnvModule):
         return obs
 
 
-class LidarSites(EnvModule):
+class LidarSites(Module):
     '''
     Adds sites to visualize Lidar rays
         Args:
@@ -309,7 +309,7 @@ class LidarSites(EnvModule):
     def __init__(self, n_agents, n_lidar_per_agent):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         for i in range(self.n_agents):
             for j in range(self.n_lidar_per_agent):
                 floor.mark(f"agent{i}:lidar{j}", (0.0, 0.0, 0.0), rgba=np.zeros((4,)))

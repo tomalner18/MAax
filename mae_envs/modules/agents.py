@@ -6,14 +6,14 @@ from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
                                       set_joint_damping_transform)
-from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
+from mae_envs.modules import Module, rejection_placement, get_size_from_xml
 from worldgen import ObjFromXML
 
 import jax
 from jax import numpy as jp
 
 
-class Agents(EnvModule):
+class Agents(Module):
     '''
         Add Agents to the environment.
         Args:
@@ -32,7 +32,7 @@ class Agents(EnvModule):
                  damp_z=False, polar_obs=True, slide=False, arm=True):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         env.metadata['n_agents'] = self.n_agents
         successful_placement = True
 

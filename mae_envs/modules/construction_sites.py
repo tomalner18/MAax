@@ -1,9 +1,9 @@
 import numpy as np
 from worldgen.util.types import store_args
-from mae_envs.modules import EnvModule, rejection_placement
+from mae_envs.modules import Module, rejection_placement
 
 
-class ConstructionSites(EnvModule):
+class ConstructionSites(Module):
     '''
         Adds construction sites to the environment. A construction site consists of 5
         regular mujoco sites, with four of them (the 'corner' sites) forming a rectangle
@@ -45,7 +45,7 @@ class ConstructionSites(EnvModule):
                        relative_xyz=(x_corner, y_corner, z),
                        size=0.05, rgba=[0.8, 0.8, 0.8, 1.])
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         self.curr_n_sites = env._random_state.randint(self.n_sites[0], self.n_sites[1] + 1)
         self.curr_n_elongated_sites = env._random_state.randint(
             self.n_elongated_sites[0], self.n_elongated_sites[1] + 1)

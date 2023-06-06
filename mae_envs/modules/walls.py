@@ -3,7 +3,7 @@ from worldgen.util.types import store_args
 from worldgen import Geom
 from worldgen.objs.fixed import Fixed
 from worldgen.transforms import set_geom_attr_transform
-from mae_envs.modules import EnvModule
+from mae_envs.modules import Module
 
 import jax
 from jax import numpy as jp
@@ -134,8 +134,6 @@ def connect_walls(wall1, wall2, min_dist_between, random_state=np.random.RandomS
         Draw a random new wall connecting wall1 and wall2. Return None if
         the drawn wall was closer than min_dist_between to another wall
         or the wall wasn't valid.
-        NOTE: This DOES NOT check if the created wall overlaps with any existing walls, that
-            should be done outside of this function
         Args:
             wall1, wall2 (Wall): walls to draw a new wall between
             min_dist_between (int): closest another parallel wall can be to the new wall in grid cells.
@@ -168,9 +166,6 @@ def connect_walls(wall1, wall2, min_dist_between, random_state=np.random.RandomS
 def choose_new_split(walls, min_dist_between, num_tries=10, random_state=np.random.RandomState()):
     '''
         Given a list of walls, choose a random wall and draw a new wall perpendicular to it.
-        NOTE: Right now this O(n_walls^2). We could probably get this to linear if we did
-            something smarter with the occupancy grid. Until n_walls gets way bigger this
-            should be fine though.
         Args:
             walls (Wall list): walls to possibly draw a new wall from
             min_dist_between (int): closest another parallel wall can be to the new wall in grid cells.
@@ -299,7 +294,7 @@ def outside_walls(grid_size, rgba=(0.6, 1, 0.6, 1.0), use_low_wall_height=False)
             Wall([0, grid_size - 1], [grid_size - 1, grid_size - 1], height=height, rgba=rgba)]
 
 
-class RandomWalls(EnvModule):
+class RandomWalls(Module):
     '''
     Add random walls to the environment. This must be the first module added to the environment
         Args:
@@ -325,7 +320,7 @@ class RandomWalls(EnvModule):
                  low_outside_walls=False):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         # Create rooms
         walls = outside_walls(self.grid_size, rgba=self.outside_wall_rgba,
                               use_low_wall_height=self.low_outside_walls)
@@ -371,7 +366,7 @@ class RandomWalls(EnvModule):
         return obs
 
 
-class WallScenarios(EnvModule):
+class WallScenarios(Module):
     '''
     Add a wall scenario to the environment. This must be the first module added to the environment.
         Args:
@@ -397,7 +392,7 @@ class WallScenarios(EnvModule):
                  low_outside_walls=False):
         assert scenario in ['var_quadrant', 'quadrant', 'half', 'var_tri', 'empty']
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         # Outside walls
         walls = outside_walls(self.grid_size, use_low_wall_height=self.low_outside_walls)
         walls_to_split = []
