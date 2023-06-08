@@ -102,17 +102,11 @@ class Obj(object):
         # otherwise object is static.
         self._keep_slide_joint = [True for _ in range(3)]
         self._keep_hinge_joint = [True for _ in range(3)]
+        self._limit_joints = False
 
     # Removes joints from the object, and makes it not movable.
-    def mark_static(self,
-                    keep_slide0=False,
-                    keep_slide1=False,
-                    keep_slide2=False,
-                    keep_hinge0=False,
-                    keep_hinge1=False,
-                    keep_hinge2=False):
-        self._keep_slide_joint = [keep_slide0, keep_slide1, keep_slide2]
-        self._keep_hinge_joint = [keep_hinge0, keep_hinge1, keep_hinge2]
+    def mark_static(self):
+        self._limit_joints = True
 
     def mark_unhinged(self,
                     keep_slide0=True,
@@ -123,6 +117,8 @@ class Obj(object):
                     keep_hinge2=False):
         self._keep_slide_joint = [keep_slide0, keep_slide1, keep_slide2]
         self._keep_hinge_joint = [keep_hinge0, keep_hinge1, keep_hinge2]
+
+
 
     # ##################################################################
     # ########################## First Phase ###########################
@@ -400,20 +396,30 @@ class Obj(object):
         for body in self.xml_dict.get("worldbody", {}).get("body", []):
             remaining_joints = []
             for jnt in body.get("joint", []):
+                jnt
                 if jnt["@type"] == "slide":
                     axis_idx = get_axis_index(jnt["@axis"])
+                    if self._limit_joints:
+                        jnt["@range"] = "-1.0 1.0"
                     if self._keep_slide_joint[axis_idx]:
                         remaining_joints.append(jnt)
                     else:
                         body["@pos"][axis_idx] = float(body["@pos"][axis_idx]) + self.absolute_position[axis_idx]
                 elif jnt["@type"] == "hinge":
                     axis_idx = get_axis_index(jnt["@axis"])
+                    if self._limit_joints:
+                        jnt["@range"] = "-1.0 1.0"
                     if self._keep_hinge_joint[axis_idx]:
                         remaining_joints.append(jnt)
                 elif jnt["@type"] == "ball":
+                    if np.any(self._limit_joints):
+                        raise NotImplementedError("Brax doesn't support joint ranges for ball joints")
                     remaining_joints.append(jnt)
                 elif jnt["@type"] == "free":
+                    if self._limit_joints:
+                        jnt["@range"] = "0. 0. 0. 0. 0. 0."
                     remaining_joints.append(jnt)
+              
             body["joint"] = remaining_joints
 
         if len(self.markers) > 0:

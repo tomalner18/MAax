@@ -19,7 +19,7 @@ class Wall:
             rgba (float tuple): wall rgba
             mass (float): wall mass
     '''
-    def __init__(self, pt1, pt2, height=0.5, rgba=(0.6, 1, 0.6, 1.0), mass=1000000):
+    def __init__(self, pt1, pt2, height=0.5, rgba=(0.6, 1, 0.6, 1.0), mass=10):
         assert pt1[0] == pt2[0] or pt1[1] == pt2[1], (
             "Currently only horizontal and vertical walls are supported")
         self.is_vertical = pt1[0] == pt2[0]
@@ -234,7 +234,7 @@ def add_walls_to_grid(grid, walls):
             grid[wall.pt1[0]:wall.pt2[0] + 1, wall.pt1[1]] = 1
 
 
-def walls_to_brax(floor, floor_size, grid_size, walls, friction=None):
+def walls_to_brax(floor, floor_size, grid_size, walls, friction=1.0):
     '''
         Take a list of walls in grid frame and add them to the floor in the worldgen frame.
         Args:
@@ -276,8 +276,8 @@ def walls_to_brax(floor, floor_size, grid_size, walls, friction=None):
         scale_y = (floor_size - size[1]) / floor_size
         pos = pos / np.array([scale_x, scale_y])
         geom = Geom('box', size, name=f"wall{i}")
-        # geom.mark_static()
         geom.mark_unhinged()
+        geom.mark_static()
         geom.add_transform(set_geom_attr_transform('rgba', wall.rgba))
         geom.add_transform(set_geom_attr_transform('group', 1))
         geom.add_transform(set_geom_attr_transform('mass', wall.mass))

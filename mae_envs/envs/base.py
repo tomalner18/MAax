@@ -62,8 +62,8 @@ class Base(Env):
 
     def _get_sim(self, seed):
         '''
-            Calls build_step and then modify_sim_step for each module. If
-            a build_step failed, then restarts.
+            Calls build_world_step and then modify_sim_step for each module. If
+            a build_world_step failed, then restarts.
         '''
         self.floor_size = np.random.uniform(self.floor_size_dist[0], self.floor_size_dist[1])
         self.metadata['floor_size'] = self.floor_size
@@ -81,7 +81,7 @@ class Base(Env):
 
             self.placement_grid = np.zeros((self.grid_size, self.grid_size))
 
-            successful_placement = np.all([module.build_step(self, floor, self.floor_size)
+            successful_placement = np.all([module.build_world_step(self, floor, self.floor_size)
                                            for module in self.modules])
             failures += 1
 

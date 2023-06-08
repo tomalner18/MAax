@@ -102,6 +102,19 @@ class Base(PipelineEnv):
             obs.update(module.observation_step(pipeline_state))
         return obs
 
+    def _set_joint_ranges(self):
+        '''
+            Sets unlimited joint ranges for all joints in the system.
+        '''
+        lower_bound = jp.full(self.sys.dof.limit[0].shape, -jp.inf)
+        upper_bound = jp.full(self.sys.dof.limit[1].shape, jp.inf)
+        
+        # Set sys.dof.limit[0] to  at all occurences of -1
+        lower_bound = jp.where(self.sys.dof.limit[0] == -1, self.init_q[:lower_bound.size], lower_bound)
+        upper_bound = jp.where(self.sys.dof.limit[1] == 1, self.init_q[:upper_bound.size], upper_bound)
+
+        self.sys = self.sys.replace(dof=self.sys.dof.replace(limit=(lower_bound, upper_bound)))
+        
 
     def _store_joint_indices(self, init_dict):
         '''
@@ -155,6 +168,8 @@ class Base(PipelineEnv):
 
         # Store the joint indices for manipulation in observation step
         self._store_joint_indices(self.init_dict)
+        
+        self._set_joint_ranges()
 
         # Cache the joint data in the modules for observation steps
         for module in self.modules:
@@ -187,6 +202,8 @@ class Base(PipelineEnv):
             failures += 1
 
         return builder.get_xml()
+  
+
 
     def set_info(self) -> Dict[str, Any]:
         """Sets the environment info."""

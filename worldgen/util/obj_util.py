@@ -153,12 +153,13 @@ def get_body_xml_node(name, use_joints=False, free=False):
 
     if use_joints:
         joints = []
-        joint = OrderedDict()
         if free:
+            joint = OrderedDict()
             joint['@type'] = "free"
             joint["@name"] = "%s_%s" % (name, "free")
             joint['@damping'] = 0.01
             joint['@pos'] = np.zeros(3)
+            joint["@limited"] = "auto"
             joints.append(joint)
         else:
             for axis_type in ('slide', 'hinge'):
@@ -169,7 +170,9 @@ def get_body_xml_node(name, use_joints=False, free=False):
                     joint['@type'] = axis_type
                     joint['@damping'] = 0.01
                     joint['@pos'] = np.zeros(3)
+                    joint["@limited"] = "auto"
                     joints.append(joint)
+
         body['joint'] = joints
     return body
 
