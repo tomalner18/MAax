@@ -318,7 +318,7 @@ class RandomWalls(Module):
                  num_tries=10, outside_wall_rgba=(0.6, 1, 0.6, 1.0),
                  random_room_number=False, gen_door_obs=True, prob_outside_walls=1.0,
                  low_outside_walls=False):
-        pass
+        self.door_obs = None
 
     def build_step(self, env, floor, floor_size):
         # Create rooms
@@ -349,9 +349,10 @@ class RandomWalls(Module):
         else:
             walls = new_walls
 
-        # Convert doors into mujoco frame
         if self.gen_door_obs:
             self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
+
+        print(self.door_obs)
 
         walls_to_brax(floor, floor_size, self.grid_size, walls, friction=self.friction)
         add_walls_to_grid(env.placement_grid, walls)
@@ -391,6 +392,7 @@ class WallScenarios(Module):
     def __init__(self, grid_size, door_size, scenario, friction=None, gen_door_obs=True, p_door_dropout=0.0,
                  low_outside_walls=False):
         assert scenario in ['var_quadrant', 'quadrant', 'half', 'var_tri', 'empty']
+        self.door_obs = None
 
     def build_step(self, env, floor, floor_size):
         # Outside walls

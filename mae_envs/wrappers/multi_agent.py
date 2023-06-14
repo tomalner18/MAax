@@ -42,7 +42,7 @@ class SplitObservations(ObservationWrapper):
         Split observations for each agent.
         Args:
             keys_self: list of observation names which are agent specific. E.g. this will
-                    permute qpos such that each agent sees its own qpos as the first numbers
+                    permute q such that each agent sees its own q as the first numbers
             keys_copy: list of observation names that are just passed down as is
             keys_self_matrices: list of observation names that should be (n_agent, n_agent, dim) where
                 each agent has a custom observation of another agent. This is different from self_keys
@@ -60,43 +60,57 @@ class SplitObservations(ObservationWrapper):
         '''
         TODO: Implement observation splitting and reshaping (n_agents, n_objects, )
         '''
-        # new_obs = {}
-        # for k, v in obs.items():
-        #     # Masks that aren't self matrices should just be copied
-        #     if 'mask' in k and k not in self.keys_self_matrices:
-        #         new_obs[k] = obs[k]
-        #     # Circulant self matrices
-        #     elif k in self.keys_self_matrices:
-        #         new_obs[k] = self._process_self_matrix(obs[k])
-        #     # Circulant self keys
-        #     elif k in self.keys_self:
-        #         new_obs[k + '_self'] = obs[k]
-        #         new_obs[k] = obs[k][circulant(jp.arange(self.n_agents))]
-        #         new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
-        #     elif k in self.keys_copy:
-        #         new_obs[k] = obs[k]
-        #     # Everything else should just get copied for each agent (e.g. external obs)
-        #     else:
-        #         new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
+        new_obs = {}
+        for k, v in obs.items():
+            # Masks that aren't self matrices should just be copied
+            if 'mask' in k and k not in self.keys_self_matrices:
+                new_obs[k] = obs[k]
+            # Circulant self matrices
+            elif k in self.keys_self_matrices:
+                new_obs[k] = self._process_self_matrix(obs[k])
+            # Circulant self keys
+            elif k in self.keys_self:
+                new_obs[k + '_self'] = obs[k]
+                i = self._circulant(jp.arange(self.n_agents))
+                new_obs[k] = obs[k][i]
+                new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
+            elif k in self.keys_copy:
+                new_obs[k] = obs[k]
+            # Everything else should just get copied for each agent (e.g. external obs)
+            else:
+                print("K: ", k)
+                print("V: ", v)
+                new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
 
-        # return new_obs
-        return obs
+        return new_obs
 
     def _process_self_matrix(self, self_matrix):
         '''
             self_matrix will be a (n_agent, n_agent) boolean matrix. Permute each row such that the matrix is consistent with
                 the circulant permutation used for self observations. E.g. this should be used for agent agent masks
         '''
-        assert jp.all(self_matrix.shape[:2] == jp.array((self.n_agents, self.n_agents))), \
-            f"The first two dimensions of {self_matrix} were not (n_agents, n_agents)"
+
+        jax.debug.print("Shape: {}", self_matrix.shape[:2])
 
         new_mat = self_matrix.copy()
         # Permute each row to the right by one more than the previous
         # E.g., [[1,2],[3,4]] -> [[1,2],[4,3]]
-        idx = circulant(jp.arange(self.n_agents))
+        idx = self._circulant(jp.arange(self.n_agents))
         new_mat = new_mat[jp.arange(self.n_agents)[:, None], idx]
         new_mat = new_mat[:, 1:]  # Remove self observation
         return new_mat
+
+    def _circulant(self, c):
+        '''
+        Constructs a circulant matrix
+        '''
+        n = len(c)
+        pad_size = (n - 1, 0)
+        padded_c = jp.pad(c, pad_size, mode='constant')
+        indices = jp.arange(n)
+        indices = jp.roll(indices, -1)
+        circulant_matrix = padded_c[indices[:, jp.newaxis] - indices]
+        return circulant_matrix
 
 
 class SelectKeysWrapper(ObservationWrapper):

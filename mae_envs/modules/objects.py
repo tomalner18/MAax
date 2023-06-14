@@ -1,7 +1,7 @@
 import numpy as np
 from worldgen.util.types import store_args
-from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
-                                            qvel_idxs_from_joint_prefix)
+from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
+                                            qd_idxs_from_joint_prefix)
 from worldgen import Geom, Material, ObjFromXML
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
@@ -211,9 +211,9 @@ class Ramps(Module):
 
         obs = {'ramp_obs': ramp_obs,
         'ramp_angle': ramp_angle,
-        'ramp_qpos': ramp_qs}
+        'ramp_q': ramp_qs}
 
-        # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
+        # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_q[:, :3]))
 
         return obs
 
@@ -274,8 +274,8 @@ class Cylinders(Module):
         self.cylinder_qd_idxs = env.qd_indices['moveable_cylinder']
 
     def observation_step(self, env, sim):
-        qpos = sim.data.qpos.copy()
-        qvel = sim.data.qvel.copy()
+        q = sim.data.q.copy()
+        qd = sim.data.qd.copy()
 
         if self.make_static:
             s_cylinder_geom_idxs = np.expand_dims(self.s_cylinder_geom_idxs, -1)
@@ -285,12 +285,12 @@ class Cylinders(Module):
         else:
             m_cylinder_geom_idxs = np.expand_dims(self.m_cylinder_geom_idxs, -1)
             m_cylinder_xpos = sim.data.geom_xpos[self.m_cylinder_geom_idxs]
-            m_cylinder_qpos = qpos[self.m_cylinder_qpos_idxs]
-            m_cylinder_qvel = qvel[self.m_cylinder_qvel_idxs]
-            mc_angle = normalize_angles(m_cylinder_qpos[:, 3:])
+            m_cylinder_q = q[self.m_cylinder_q_idxs]
+            m_cylinder_qd = qd[self.m_cylinder_qd_idxs]
+            mc_angle = normalize_angles(m_cylinder_q[:, 3:])
             polar_angle = np.concatenate([np.cos(mc_angle), np.sin(mc_angle)], -1)
-            m_cylinder_qpos = np.concatenate([m_cylinder_qpos[:, :3], polar_angle], -1)
-            m_cylinder_obs = np.concatenate([m_cylinder_qpos, m_cylinder_qvel], -1)
+            m_cylinder_q = np.concatenate([m_cylinder_q[:, :3], polar_angle], -1)
+            m_cylinder_obs = np.concatenate([m_cylinder_q, m_cylinder_qd], -1)
             obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
                    'moveable_cylinder_xpos': m_cylinder_xpos,
                    'moveable_cylinder_obs': m_cylinder_obs}

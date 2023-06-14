@@ -392,7 +392,7 @@ class Obj(object):
         # First add all of our own xml
         self.xml_dict = self.generate_xml_dict()
 
-        # Removed joints marked to be static. We set positions in XML instead of using qpos.
+        # Removed joints marked to be static. We set positions in XML instead of using q.
         for body in self.xml_dict.get("worldbody", {}).get("body", []):
             remaining_joints = []
             for jnt in body.get("joint", []):
@@ -487,8 +487,8 @@ class Obj(object):
                 if joint_name in position_xinit:
                     xinit[joint_name] = position_xinit[joint_name]
 
-        if hasattr(self, "default_qpos") and self.default_qpos is not None:
-            for joint, value in self.default_qpos.items():
+        if hasattr(self, "default_q") and self.default_q is not None:
+            for joint, value in self.default_q.items():
                 if not joint.startswith(self.name + '_'):
                     joint = self.name + "_" + joint
                 xinit[joint] = value

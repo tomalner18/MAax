@@ -23,7 +23,7 @@ class ObjFromXML(Obj):
     Moreover, its left lower corner should be located at (0, 0, 0)
     """
     @store_args
-    def __init__(self, model_path, name=None, default_qpos=None):
+    def __init__(self, model_path, name=None, default_q=None):
         super(ObjFromXML, self).__init__()
 
     def generate(self, random_state, world_params, placement_size):
@@ -44,9 +44,9 @@ class ObjFromXML(Obj):
                 assert geom.get('@type') == 'box', "%s must have box" % name
                 assert '@size' in geom, "%s geom must have size" % name
                 if '@pos' in geom:
-                    # Worldgen places objects by moving qpos (slide joints)
+                    # Worldgen places objects by moving q (slide joints)
                     # to put them in position, and their final position is:
-                    #   qpos + pos + parent_pos + ...
+                    #   q + pos + parent_pos + ...
                     # In order for objects to end up where worldgen wants them,
                     # all of the pos + parent_pos + ... have to equal zero.
                     # Otherwise the offsets get messed up.

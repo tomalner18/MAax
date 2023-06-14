@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def ctrl_set_action(sim, action):
     """
     For torque actuators it copies the action into mujoco ctrl field.
-    For position actuators it sets the target relative to the current qpos.
+    For position actuators it sets the target relative to the current q.
     """
     if sim.model.nmocap > 0:
         _, action = np.split(action, (sim.model.nmocap * 7, ))
@@ -21,8 +21,8 @@ def ctrl_set_action(sim, action):
             if sim.model.actuator_biastype[i] == 0:
                 sim.data.ctrl[i] = action[i]
             else:
-                idx = sim.model.jnt_qposadr[sim.model.actuator_trnid[i, 0]]
-                sim.data.ctrl[i] = sim.data.qpos[idx] + action[i]
+                idx = sim.model.jnt_qadr[sim.model.actuator_trnid[i, 0]]
+                sim.data.ctrl[i] = sim.data.q[idx] + action[i]
 
 
 # #######################################
@@ -57,9 +57,9 @@ def false_get_diverged(sim):
 
 def simple_get_diverged(sim):
 
-    if sim.data.qpos is not None and \
-         (np.max(np.abs(sim.data.qpos)) > 1000.0 or
-          np.max(np.abs(sim.data.qvel)) > 100.0):
+    if sim.data.q is not None and \
+         (np.max(np.abs(sim.data.q)) > 1000.0 or
+          np.max(np.abs(sim.data.qd)) > 100.0):
         return True, -20.0
     return False, 0.0
 
@@ -77,9 +77,9 @@ def empty_get_info(sim):
 
 
 def flatten_get_obs(sim):
-    if sim.data.qpos is None:
+    if sim.data.q is None:
         return np.zeros(0)
-    return np.concatenate([sim.data.qpos, sim.data.qvel])
+    return np.concatenate([sim.data.q, sim.data.qd])
 
 
 def image_get_obs(sim):
@@ -106,38 +106,38 @@ def change_geom_alpha(model, body_name_prefix, new_alpha):
                 model.geom_rgba[geom_id, 3] = new_alpha
 
 
-def joint_qpos_idxs(sim, joint_name):
-    ''' Gets indexes for the specified joint's qpos values'''
-    addr = sim.model.get_joint_qpos_addr(joint_name)
+def joint_q_idxs(sim, joint_name):
+    ''' Gets indexes for the specified joint's q values'''
+    addr = sim.model.get_joint_q_addr(joint_name)
     if isinstance(addr, tuple):
         return list(range(addr[0], addr[1]))
     else:
         return [addr]
 
 
-def qpos_idxs_from_joint_prefix(sim, prefix):
-    ''' Gets indexes for the qpos values of all joints matching the prefix'''
-    qpos_idxs_list = [joint_qpos_idxs(sim, name)
+def q_idxs_from_joint_prefix(sim, prefix):
+    ''' Gets indexes for the q values of all joints matching the prefix'''
+    q_idxs_list = [joint_q_idxs(sim, name)
                       for name in sim.model.joint_names
                       if name.startswith(prefix)]
-    return list(itertools.chain.from_iterable(qpos_idxs_list))
+    return list(itertools.chain.from_iterable(q_idxs_list))
 
 
-def joint_qvel_idxs(sim, joint_name):
-    ''' Gets indexes for the specified joint's qvel values'''
-    addr = sim.model.get_joint_qvel_addr(joint_name)
+def joint_qd_idxs(sim, joint_name):
+    ''' Gets indexes for the specified joint's qd values'''
+    addr = sim.model.get_joint_qd_addr(joint_name)
     if isinstance(addr, tuple):
         return list(range(addr[0], addr[1]))
     else:
         return [addr]
 
 
-def qvel_idxs_from_joint_prefix(sim, prefix):
-    ''' Gets indexes for the qvel values of all joints matching the prefix'''
-    qvel_idxs_list = [joint_qvel_idxs(sim, name)
+def qd_idxs_from_joint_prefix(sim, prefix):
+    ''' Gets indexes for the qd values of all joints matching the prefix'''
+    qd_idxs_list = [joint_qd_idxs(sim, name)
                       for name in sim.model.joint_names
                       if name.startswith(prefix)]
-    return list(itertools.chain.from_iterable(qvel_idxs_list))
+    return list(itertools.chain.from_iterable(qd_idxs_list))
 
 
 def body_names_from_joint_prefix(sim, prefix):

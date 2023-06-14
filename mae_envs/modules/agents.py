@@ -1,7 +1,7 @@
 import numpy as np
 from worldgen.util.types import store_args
-from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
-                                            qvel_idxs_from_joint_prefix)
+from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
+                                            qd_idxs_from_joint_prefix)
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
@@ -75,9 +75,9 @@ class Agents(Module):
         # Cache q, qd idxs
         self.agent_q_idxs = env.q_indices['agent']
         self.agent_qd_idxs = env.qd_indices['agent']
-        # self.agent_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'agent{i}')
+        # self.agent_q_idxs = np.array([q_idxs_from_joint_prefix(sim, f'agent{i}')
         #                                  for i in range(self.n_agents)])
-        # self.agent_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'agent{i}')
+        # self.agent_qd_idxs = np.array([qd_idxs_from_joint_prefix(sim, f'agent{i}')
         #                                 for i in range(self.n_agents)])
         # env.metadata['agent_geom_idxs'] = [sim.model.geom_name2id(f'agent{i}:agent')
         #                                    for i in range(self.n_agents)]
@@ -102,7 +102,7 @@ class Agents(Module):
         #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
         # agent_angle = normalize_angles(agent_angle)
         obs = {
-            'agent_qpos_qvel': agent_q_qd,
+            'agent_q_qd': agent_q_qd,
             # 'agent_angle': agent_angle,
             'agent_pos': agent_q}
 

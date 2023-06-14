@@ -188,8 +188,8 @@ class Base(PipelineEnv):
         successful_placement = False
         failures = 0
         while not successful_placement:
-            if (failures + 1) % 10 == 0:
-                logging.warning(f"Failed {failures} times in creating environment")
+            # if (failures + 1) % 10 == 0:
+            #     logging.warning(f"Failed {failures} times in creating environment")
             builder = WorldBuilder(world_params, seed)
             floor = Floor()
 

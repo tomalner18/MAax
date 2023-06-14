@@ -79,7 +79,7 @@ class WorldBuilder(Obj):
         # model = load_model_from_xml(xml)
         # sim = MjSim(model, nsubsteps=self.world_params.num_substeps)
         # for name, value in xinit_dict.items():
-        #     sim.data.set_joint_qpos(name, value)
+        #     sim.data.set_joint_q(name, value)
         # # Places mocap where related bodies are.
         # if sim.model.nmocap > 0 and sim.model.eq_data is not None:
         #     for i in range(sim.model.eq_data.shape[0]):

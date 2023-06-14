@@ -75,7 +75,7 @@ def proximity_placement(object_type, object_index, radius_key):
         assert init_pos_key in metadata, \
             f"First object position must be specified in metadata['{init_pos_key}']"
         assert radius_key in metadata, \
-            f"metadata['{radius_key}'] mus be specified."
+            f"metadata['{radius_key}'] must be specified."
 
         grid_size = len(grid)
 
