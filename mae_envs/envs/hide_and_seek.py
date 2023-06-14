@@ -134,10 +134,10 @@ class HideAndSeekRewardWrapper(MWrapper):
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
-        obs = dst_state.obs
+        d_obs = dst_state.d_obs
 
         this_rew = jp.ones((self.n_agents,))
-        mask_aa_con = obs['mask_aa_con']
+        mask_aa_con = d_obs['mask_aa_con']
 
         hiders = mask_aa_con[:self.n_hiders, self.n_hiders:]
         seekers = mask_aa_con[self.n_hiders:, :self.n_hiders]
@@ -200,23 +200,23 @@ class MaskUnseenAction(MWrapper):
         return dst_state.replace(obs=deepcopy(self.prev_obs))
 
 
-def quadrant_placement(grid, obj_size, metadata, random_state):
+def quad_placement(grid, obj_size, metadata, random_state):
     '''
-        Places object within the bottom right quadrant of the playing field
+        Places object within the bottom right quad of the playing field
     '''
     grid_size = len(grid)
-    qsize = metadata['quadrant_size']
+    qsize = metadata['quad_size']
     pos = np.array([random_state.randint(grid_size - qsize, grid_size - obj_size[0] - 1),
                     random_state.randint(1, qsize - obj_size[1] - 1)])
     return pos
 
 
-def outside_quadrant_placement(grid, obj_size, metadata, random_state):
+def outside_quad_placement(grid, obj_size, metadata, random_state):
     '''
-        Places object outside of the bottom right quadrant of the playing field
+        Places object outside of the bottom right quad of the playing field
     '''
     grid_size = len(grid)
-    qsize = metadata['quadrant_size']
+    qsize = metadata['quad_size']
     poses = [
         np.array([random_state.randint(1, grid_size - qsize - obj_size[0] - 1),
                   random_state.randint(1, qsize - obj_size[1] - 1)]),

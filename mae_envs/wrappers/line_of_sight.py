@@ -15,13 +15,14 @@ class AgentAgentContactMask2D(ObservationWrapper):
         self.distance_threshold = distance_threshold
         self.n_agents = self.unwrapped.n_agents
     
-    def observation(self, obs):
+    def observation(self, state):
         # Agent to agent contact mask
-        agent_pos2d = obs['agent_pos'][:, :-1]
+        d_obs = state.d_obs
+        agent_pos2d = d_obs['agent_pos'][:, :-1]
         contact_mask = caught(agent_pos2d, self.distance_threshold)
 
-        obs['mask_aa_con'] = contact_mask
-        return obs
+        d_obs['mask_aa_con'] = contact_mask
+        return d_obs
 
 class AgentAgentObsMask2D(ObservationWrapper):
     """ Adds an mask observation that states which agents are visible to which agents.
@@ -34,10 +35,11 @@ class AgentAgentObsMask2D(ObservationWrapper):
         self.n_agents = self.unwrapped.n_agents
         # self.observation_space = update_obs_space(env, {'mask_aa_obs': (self.n_agents, self.n_agents)})
 
-    def observation(self, obs):
+    def observation(self, state):
         # Agent to agent obs mask
-        agent_pos2d = obs['agent_pos'][:, :-1]
-        agent_angle = obs['agent_angle']
+        d_obs = state.d_obs
+        agent_pos2d = d_obs['agent_pos'][:, :-1]
+        agent_angle = d_obs['agent_angle']
         cone_mask = in_cone2d(agent_pos2d, jp.squeeze(agent_angle, -1), self.cone_angle, agent_pos2d)
         # Make sure they are in line of sight
         for i, j in jp.argwhere(cone_mask):
@@ -45,8 +47,8 @@ class AgentAgentObsMask2D(ObservationWrapper):
                 cone_mask[i, j] = insight(self.unwrapped.sim,
                                           self.metadata['agent_geom_idxs'][i],
                                           self.metadata['agent_geom_idxs'][j])
-        obs['mask_aa_obs'] = cone_mask
-        return obs
+        d_obs['mask_aa_obs'] = cone_mask
+        return d_obs
 
 
 class AgentSiteObsMask2D(ObservationWrapper):
@@ -66,18 +68,19 @@ class AgentSiteObsMask2D(ObservationWrapper):
         self.pos_obs_key = pos_obs_key
         self.mask_obs_key = mask_obs_key
 
-    def observation(self, obs):
-        agent_pos2d = obs['agent_pos'][:, :-1]
-        agent_angle = obs['agent_angle']
-        pos2d = obs[self.pos_obs_key][:, :2]
+    def observation(self, state):
+        d_obs = state.d_obs
+        agent_pos2d = d_obs['agent_pos'][:, :-1]
+        agent_angle = d_obs['agent_angle']
+        pos2d = d_obs[self.pos_obs_key][:, :2]
         cone_mask = in_cone2d(agent_pos2d, jp.squeeze(agent_angle, -1), self.cone_angle, pos2d)
         # Make sure they are in line of sight
         for i, j in jp.argwhere(cone_mask):
             agent_geom_id = self.metadata['agent_geom_idxs'][i]
-            pt2 = obs[self.pos_obs_key][j]
+            pt2 = d_obs[self.pos_obs_key][j]
             cone_mask[i, j] = insight(self.unwrapped.sim, agent_geom_id, pt2=pt2)
-        obs[self.mask_obs_key] = cone_mask
-        return obs
+        d_obs[self.mask_obs_key] = cone_mask
+        return d_obs
 
 
 class AgentGeomObsMask2D(ObservationWrapper):
@@ -99,15 +102,16 @@ class AgentGeomObsMask2D(ObservationWrapper):
         self.mask_obs_key = mask_obs_key
         self.geom_idxs_obs_key = geom_idxs_obs_key
 
-    def observation(self, obs):
-        agent_pos2d = obs['agent_pos'][:, :-1]
-        agent_angle = obs['agent_angle']
-        pos2d = obs[self.pos_obs_key][:, :2]
+    def observation(self, state):
+        d_obs = state.d_obs
+        agent_pos2d = d_obs['agent_pos'][:, :-1]
+        agent_angle = d_obs['agent_angle']
+        pos2d = d_obs[self.pos_obs_key][:, :2]
         cone_mask = in_cone2d(agent_pos2d, jp.squeeze(agent_angle, -1), self.cone_angle, pos2d)
         # Make sure they are in line of sight
         for i, j in jp.argwhere(cone_mask):
             agent_geom_id = self.metadata['agent_geom_idxs'][i]
-            geom_id = obs[self.geom_idxs_obs_key][j, 0]
+            geom_id = d_obs[self.geom_idxs_obs_key][j, 0]
             if geom_id == -1:
                 # This option is helpful if the number of geoms varies between episodes
                 # If geoms don't exists this wrapper expects that the geom idx is
@@ -115,5 +119,5 @@ class AgentGeomObsMask2D(ObservationWrapper):
                 cone_mask[i, j] = 0
             else:
                 cone_mask[i, j] = insight(self.unwrapped.sim, agent_geom_id, geom2_id=geom_id)
-        obs[self.mask_obs_key] = cone_mask
-        return obs
+        d_obs[self.mask_obs_key] = cone_mask
+        return d_obs

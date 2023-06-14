@@ -28,7 +28,8 @@ from mae_envs.modules.objects import Boxes, Ramps
 class State:
     """MAax Environment state for training and inference."""
     pipeline_state: Optional[base.State]
-    obs: Dict[str, jp.ndarray]
+    obs: jp.ndarray
+    d_obs: Dict[str, jp.ndarray]
     reward: jp.ndarray
     done: jp.ndarray
     step: int = 0
@@ -90,17 +91,17 @@ class Base(PipelineEnv):
     def add_module(self, module):
         self.modules.append(module)
 
-    def _get_obs(self, pipeline_state: base.State) -> jp.ndarray:
+    def _get_d_obs(self, pipeline_state: base.State) -> jp.ndarray:
         '''
             Returns the environment observation.
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = {}
+        d_obs = {}
         for module in self.modules:
             # obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
-            obs.update(module.observation_step(pipeline_state))
-        return obs
+            d_obs.update(module.observation_step(pipeline_state))
+        return d_obs
 
     def _set_joint_ranges(self):
         '''
@@ -175,6 +176,14 @@ class Base(PipelineEnv):
         for module in self.modules:
             module.cache_step(self)
 
+    def _concat_obs(self, d_obs):
+        '''
+            Concatenates the observation dictionary into the Brax obs array
+        '''
+        obs = jp.concatenate([jp.ravel(v) for v in d_obs.values()])
+        jax.debug.print("Obs :{}", obs.shape)
+        return obs
+
 
     def _get_xml(self, seed):
         '''
@@ -218,12 +227,13 @@ class Base(PipelineEnv):
         init_qd = jp.zeros(self.sys.qd_size())
 
         pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
-        obs = self._get_obs(pipeline_state)
+        d_obs = self._get_d_obs(pipeline_state)
+        obs = self._concat_obs(d_obs)
         reward = jp.zeros(shape=(self.n_agents,))
         done, zero = jp.zeros(2)
         info = self.set_info()
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, info=info)
+        return State(pipeline_state=pipeline_state, obs=obs, d_obs=d_obs, reward=reward, done=done, metrics=metrics, info=info)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:
@@ -236,11 +246,12 @@ class Base(PipelineEnv):
 
         pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
-        obs = self._get_obs(pipeline_state)
+        d_obs = self._get_d_obs(pipeline_state)
+        obs = self._concat_obs(d_obs)
 
         step = state.step + 1
 
-        return state.replace(pipeline_state=pipeline_state, obs=obs, step=step)
+        return state.replace(pipeline_state=pipeline_state, obs=obs, d_obs=d_obs, step=step)
 
     @property
     def dt(self) -> jp.ndarray:

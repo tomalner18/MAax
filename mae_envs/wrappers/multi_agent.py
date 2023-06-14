@@ -20,7 +20,7 @@ class SplitMultiAgentActions(ActionWrapper):
         #                               for low, high in zip(lows, highs)])
         # })
 
-    def action(self, action):
+    def action(self, state, action):
         return action['action_movement'].ravel()
 
 
@@ -32,7 +32,7 @@ class JoinMultiAgentActions(ActionWrapper):
         high = jp.concatenate([space.high for space in self.action_space.spaces])
         self.action_space = Box(low=low, high=high, dtype=self.action_space.spaces[0].dtype)
 
-    def action(self, action):
+    def action(self, state, action):
         # action should be a tuple of different agent actions
         return jp.split(action, self.n_agents)
 
@@ -56,26 +56,27 @@ class SplitObservations(ObservationWrapper):
         self.keys_self_matrices = sorted(keys_self_matrices)
         self.n_agents = self.metadata['n_agents']
 
-    def observation(self, obs):
+    def observation(self, state):
         '''
         TODO: Implement observation splitting and reshaping (n_agents, n_objects, )
         '''
+        d_obs = state.d_obs
         new_obs = {}
-        for k, v in obs.items():
+        for k, v in d_obs.items():
             # Masks that aren't self matrices should just be copied
             if 'mask' in k and k not in self.keys_self_matrices:
-                new_obs[k] = obs[k]
+                new_obs[k] = d_obs[k]
             # Circulant self matrices
             elif k in self.keys_self_matrices:
-                new_obs[k] = self._process_self_matrix(obs[k])
+                new_obs[k] = self._process_self_matrix(d_obs[k])
             # Circulant self keys
             elif k in self.keys_self:
-                new_obs[k + '_self'] = obs[k]
+                new_obs[k + '_self'] = d_obs[k]
                 i = self._circulant(jp.arange(self.n_agents))
-                new_obs[k] = obs[k][i]
+                new_obs[k] = d_obs[k][i]
                 new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
             elif k in self.keys_copy:
-                new_obs[k] = obs[k]
+                new_obs[k] = d_obs[k]
             # Everything else should just get copied for each agent (e.g. external obs)
             else:
                 print("K: ", k)
@@ -147,7 +148,7 @@ class SelectKeysWrapper(ObservationWrapper):
         #     obs_self.update(obs_extern)
         #     self.observation_space = Dict(obs_self)
 
-    def observation(self, observation):
+    def observation(self, state):
         # if self.flatten:
         #     other_obs = [observation[k].reshape((observation[k].shape[0], -1))
         #                  for k in self.keys_other]
@@ -159,4 +160,4 @@ class SelectKeysWrapper(ObservationWrapper):
         #     other_obs = {k: v for k, v in observation.items() if k in self.keys_other}
         #     obs.update(other_obs)
         #     return obs
-        return observation
+        return state.d_obs

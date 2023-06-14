@@ -46,7 +46,8 @@ class TeamMembership(ObservationWrapper):
         self.metadata['team_index'] = jp.array(team_index)
         self.team_idx = jp.array(team_index)
 
-    def observation(self, obs):
-        obs['team_size'] = jp.sum(self.team_idx[:, None] == self.team_idx[None, :],
+    def observation(self, state):
+        d_obs = state.d_obs
+        d_obs['team_size'] = jp.sum(self.team_idx[:, None] == self.team_idx[None, :],
                                   axis=1, keepdims=True)
-        return obs
+        return d_obs

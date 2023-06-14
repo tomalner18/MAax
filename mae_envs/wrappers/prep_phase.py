@@ -19,10 +19,10 @@ class PreparationPhase(MWrapper):
 
     def reset(self, rng):
         state = self.env.reset(rng)
-        obs = self.observation(state)
+        d_obs = self.observation(state)
         info = state.info
         info['in_prep_phase'] = True
-        return state.replace(obs=obs, info=info)
+        return state.replace(d_obs=d_obs, info=info)
 
     def reward(self, state):
         reward = state.reward
@@ -35,11 +35,11 @@ class PreparationPhase(MWrapper):
         return reward
 
     def observation(self, state):
-        obs = state.obs
-        obs['prep_obs'] = (jp.ones((self.n_agents, 1)) *
+        d_obs = state.d_obs
+        d_obs['prep_obs'] = (jp.ones((self.n_agents, 1)) *
                            jp.minimum(1.0, state.info['in_prep_phase'] / (self.prep_time + 1e-5)))
 
-        return obs
+        return d_obs
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
@@ -55,8 +55,8 @@ class PreparationPhase(MWrapper):
         )
 
 
-        obs = self.observation(dst_state)
-        return dst_state.replace(obs=obs, reward=rew, info=info)
+        d_obs = self.observation(dst_state)
+        return dst_state.replace(d_obs=d_obs, reward=rew, info=info)
 
 
 class NoActionsInPrepPhase(MWrapper):
