@@ -220,7 +220,7 @@ def construct_door_obs(doors, floor_size, grid_size):
     '''
     _doors = doors + 0.5
     scaling = floor_size / grid_size
-    _door_sizes = jp.array([np.linalg.norm(door[1] - door[0]) * scaling for door in _doors])
+    _door_sizes = jp.array([jp.linalg.norm(door[1] - door[0]) * scaling for door in _doors])
     _doors = jp.array([(door[0] + (door[1] - door[0]) / 2) * scaling for door in _doors])
     return jp.concatenate([jp.ravel(_doors), _door_sizes], -1)
 
@@ -254,10 +254,10 @@ def walls_to_brax(floor, floor_size, grid_size, walls, friction=None):
     for i, wall in enumerate(walls):
         if wall.is_vertical:
             wall_length_grid = (wall.pt2[1] - wall.pt1[1] + 1)
-            offset = np.array([-1, 1])
+            offset = jp.array([-1, 1])
         else:
             wall_length_grid = (wall.pt2[0] - wall.pt1[0] + 1)
-            offset = np.array([1, -1])
+            offset = jp.array([1, -1])
 
         # Convert to mujoco frame
         wall_length = wall_length_grid * grid_cell_length
@@ -273,13 +273,13 @@ def walls_to_brax(floor, floor_size, grid_size, walls, friction=None):
 
         # Position of object should be in the middle of a grid cell (add 0.5) shifted by
         #     the wall width such that corners don't overlap
-        pos = np.array([wall.pt1[0] + 0.5, wall.pt1[1] + 0.5]) / grid_size
+        pos = jp.array([wall.pt1[0] + 0.5, wall.pt1[1] + 0.5]) / grid_size
         pos += offset * wall_width / floor_size / 2
 
         # Convert from mujoco to worldgen scale
         scale_x = (floor_size - size[0]) / floor_size
         scale_y = (floor_size - size[1]) / floor_size
-        pos = pos / np.array([scale_x, scale_y])
+        pos = pos / jp.array([scale_x, scale_y])
         geom = Geom('box', size, name=f"wall{i}")
         # geom.mark_static()
         geom.mark_unhinged()
@@ -380,31 +380,31 @@ class WallScenarios(EnvModule):
             scenario (string): Options:
                 'empty': no walls
                 'half': one wall in the middle with a random door
-                'quadrant': one quadrant is walled off with random door(s)
-                'var_quadrant': same as 'quadrant' but the room size is also randomized
+                'quad': one quadrant is walled off with random door(s)
+                'var_quad': same as 'quad' but the room size is also randomized
                 'var_tri': three rooms, one taking about half of the area and the other
                     two taking about a quarter of the area. Random doors
             friction (float): wall friction
             gen_door_obs (bool): If true, generate door observation (currently does not
                 work with random room number)
             p_door_dropout (float): probability we don't place one of the doors either
-                quadrant scenario
+                quad scenario
             low_outside_walls (bool): If true, outside walls are the same height as inside walls.
                 This is just used for pretty rendering
     '''
     @store_args
     def __init__(self, grid_size, door_size, scenario, friction=None, gen_door_obs=True, p_door_dropout=0.0,
                  low_outside_walls=False):
-        assert scenario in ['var_quadrant', 'quadrant', 'half', 'var_tri', 'empty']
+        assert scenario in ['var_quad', 'quad', 'half', 'var_tri', 'empty']
 
     def build_world_step(self, env, floor, floor_size):
         # Outside walls
         walls = outside_walls(self.grid_size, use_low_wall_height=self.low_outside_walls)
         walls_to_split = []
-        if self.scenario in ['quadrant', 'var_quadrant']:
-            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'var_quadrant' else 0.5
+        if self.scenario in ['quad', 'var_quad']:
+            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'var_quad' else 0.5
             q_size = int(q_size * self.grid_size)
-            env.metadata['quadrant_size'] = q_size
+            env.metadata['quad_size'] = q_size
             new_walls = [
                 Wall([self.grid_size - q_size, 0], [self.grid_size - q_size, q_size]),
                 Wall([self.grid_size - q_size, q_size], [self.grid_size - 1, q_size])]
@@ -486,7 +486,7 @@ class WallScenarios(EnvModule):
 
         # Convert doors into brax frame
         if len(doors) > 0:
-            self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
+            self.door_obs = construct_door_obs(jp.array(doors), floor_size, self.grid_size)
         else:
             self.door_obs = None
 
@@ -496,8 +496,8 @@ class WallScenarios(EnvModule):
 
     def observation_step(self, state):
         if self.door_obs is not None:
-            obs = {'door_obs': self.door_obs}
+            d_obs = {'door_obs': self.door_obs}
         else:
-            obs = {}
+            d_obs = {}
 
-        return obs
+        return d_obs

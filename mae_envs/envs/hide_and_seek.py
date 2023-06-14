@@ -134,10 +134,10 @@ class HideAndSeekRewardWrapper(MWrapper):
 
     def step(self, state, action):
         dst_state = self.env.step(state, action)
-        obs = dst_state.obs
+        d_obs = dst_state.d_obs
 
         this_rew = jp.ones((self.n_agents,))
-        mask_aa_con = obs['mask_aa_con']
+        mask_aa_con = d_obs['mask_aa_con']
 
         hiders = mask_aa_con[:self.n_hiders, self.n_hiders:]
         seekers = mask_aa_con[self.n_hiders:, :self.n_hiders]
@@ -200,23 +200,23 @@ class MaskUnseenAction(MWrapper):
         return dst_state.replace(obs=deepcopy(self.prev_obs))
 
 
-def quadrant_placement(grid, obj_size, metadata, random_state):
+def quad_placement(grid, obj_size, metadata, random_state):
     '''
-        Places object within the bottom right quadrant of the playing field
+        Places object within the bottom right quad of the playing field
     '''
     grid_size = len(grid)
-    qsize = metadata['quadrant_size']
+    qsize = metadata['quad_size']
     pos = np.array([random_state.randint(grid_size - qsize, grid_size - obj_size[0] - 1),
                     random_state.randint(1, qsize - obj_size[1] - 1)])
     return pos
 
 
-def outside_quadrant_placement(grid, obj_size, metadata, random_state):
+def outside_quad_placement(grid, obj_size, metadata, random_state):
     '''
-        Places object outside of the bottom right quadrant of the playing field
+        Places object outside of the bottom right quad of the playing field
     '''
     grid_size = len(grid)
-    qsize = metadata['quadrant_size']
+    qsize = metadata['quad_size']
     poses = [
         np.array([random_state.randint(1, grid_size - qsize - obj_size[0] - 1),
                   random_state.randint(1, qsize - obj_size[1] - 1)]),
@@ -241,7 +241,7 @@ def outside_quadrant_placement(grid, obj_size, metadata, random_state):
 #              grab_out_of_vision=False, grab_selective=False,
 #              box_floor_friction=0.2, other_friction=0.01, gravity=[0, 0, -50],
 #              action_lims=(-0.9, 0.9), polar_obs=True,
-#              scenario='quadrant', quadrant_game_hider_uniform_placement=False,
+#              scenario='quad', quad_game_hider_uniform_placement=False,
 #              p_door_dropout=0.0,
 #              n_rooms=4, random_room_number=True, prob_outside_walls=1.0,
 #              n_lidar_per_agent=0, visualize_lidar=False, compress_lidar_scale=None,
@@ -301,14 +301,14 @@ def outside_quadrant_placement(grid, obj_size, metadata, random_state):
 #         else:
 #             agent_placement_fn += [first_seeker_placement] * (n_seekers)
 
-#     elif scenario == 'quadrant':
+#     elif scenario == 'quad':
 #         env.add_module(WallScenarios(grid_size=grid_size, door_size=door_size,
 #                                      scenario=scenario, friction=other_friction,
 #                                      p_door_dropout=p_door_dropout))
-#         box_placement_fn = quadrant_placement
+#         box_placement_fn = quad_placement
 #         ramp_placement_fn = uniform_placement
-#         hider_placement = uniform_placement if quadrant_game_hider_uniform_placement else quadrant_placement
-#         agent_placement_fn = [hider_placement] * n_hiders + [outside_quadrant_placement] * n_seekers
+#         hider_placement = uniform_placement if quad_game_hider_uniform_placement else quad_placement
+#         agent_placement_fn = [hider_placement] * n_hiders + [outside_quad_placement] * n_seekers
 #     else:
 #         raise ValueError(f"Scenario {scenario} not supported.")
 

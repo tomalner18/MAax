@@ -122,7 +122,7 @@ def uniform_placement_middle(area_side_length_fraction):
     return uniform_placement_middle_fn
 
 
-def center_placement(grid, obj_size_in_cells, metadata, random_state):
+def centre_placement(grid, obj_size_in_cells, metadata, random_state):
     half_grid_size = int(len(grid) / 2)
     pos = np.array([half_grid_size - int(obj_size_in_cells[0]/2),
                     half_grid_size - int(obj_size_in_cells[1]/2)])

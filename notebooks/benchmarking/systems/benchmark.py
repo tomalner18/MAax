@@ -13,7 +13,7 @@ from mae_envs.modules.walls import RandomWalls, WallScenarios
 from mae_envs.modules.world import FloorAttributes, WorldConstants
 from mae_envs.modules.objects import Boxes, Cylinders, LidarSites, Ramps
 from mae_envs.modules.util import uniform_placement, center_placement
-from mae_envs.envs.hide_and_seek import quadrant_placement
+from mae_envs.envs.hide_and_seek import quad_placement
 
 import brax
 import numpy as np
@@ -44,7 +44,7 @@ def make_env(seed, n_substeps=15, horizon=80, deterministic_mode=False,
              grab_out_of_vision=False, grab_selective=False,
              box_floor_friction=0.2, other_friction=0.01, gravity=[0, 0, -50],
              action_lims=(-0.9, 0.9), polar_obs=True,
-             scenario='quadrant', quadrant_game_hider_uniform_placement=False,
+             scenario='quad', quad_game_hider_uniform_placement=False,
              p_door_dropout=0.0,
              n_rooms=4, random_room_number=True, prob_outside_walls=1.0,
              n_lidar_per_agent=0, visualize_lidar=False, compress_lidar_scale=None,

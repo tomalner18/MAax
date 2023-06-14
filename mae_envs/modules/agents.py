@@ -101,10 +101,10 @@ class Agents(EnvModule):
         # if self.polar_obs:
         #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
         # agent_angle = normalize_angles(agent_angle)
-        obs = {
+        d_obs = {
             'agent_qpos_qvel': agent_q_qd,
             # 'agent_angle': agent_angle,
             'agent_pos': agent_q}
 
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
-        return obs
+        return d_obs

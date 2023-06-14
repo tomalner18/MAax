@@ -20,7 +20,7 @@ class SplitMultiAgentActions(ActionWrapper):
         #                               for low, high in zip(lows, highs)])
         # })
 
-    def action(self, action):
+    def action(self, state, action):
         return action['action_movement'].ravel()
 
 
@@ -32,7 +32,7 @@ class JoinMultiAgentActions(ActionWrapper):
         high = jp.concatenate([space.high for space in self.action_space.spaces])
         self.action_space = Box(low=low, high=high, dtype=self.action_space.spaces[0].dtype)
 
-    def action(self, action):
+    def action(self, state, action):
         # action should be a tuple of different agent actions
         return jp.split(action, self.n_agents)
 
@@ -56,7 +56,7 @@ class SplitObservations(ObservationWrapper):
         self.keys_self_matrices = sorted(keys_self_matrices)
         self.n_agents = self.metadata['n_agents']
 
-    def observation(self, obs):
+    def observation(self, state):
         '''
         TODO: Implement observation splitting and reshaping (n_agents, n_objects, )
         '''
@@ -80,7 +80,7 @@ class SplitObservations(ObservationWrapper):
         #         new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
 
         # return new_obs
-        return obs
+        return state.d_obs
 
     def _process_self_matrix(self, self_matrix):
         '''
@@ -133,7 +133,7 @@ class SelectKeysWrapper(ObservationWrapper):
         #     obs_self.update(obs_extern)
         #     self.observation_space = Dict(obs_self)
 
-    def observation(self, observation):
+    def observation(self, state):
         # if self.flatten:
         #     other_obs = [observation[k].reshape((observation[k].shape[0], -1))
         #                  for k in self.keys_other]
@@ -145,4 +145,4 @@ class SelectKeysWrapper(ObservationWrapper):
         #     other_obs = {k: v for k, v in observation.items() if k in self.keys_other}
         #     obs.update(other_obs)
         #     return obs
-        return observation
+        return state.d_obs

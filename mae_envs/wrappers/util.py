@@ -113,13 +113,13 @@ class ObservationWrapper(MWrapper):
     def reset(self, rng):
         """Resets the environment, returning a state with modified observation using :meth:`self.observation`."""
         state = self.env.reset(rng)
-        return state.replace(obs=self.observation(state.obs))
+        return state.replace(d_obs=self.observation(state))
 
     def step(self, state, action):
         """Returns a modified observation using :meth:`self.observation` after calling :meth:`env.step`."""
         dst_state = self.env.step(state, action)
-        obs = self.observation(state.obs)
-        return dst_state.replace(obs=obs)
+        d_obs = self.observation(state)
+        return dst_state.replace(d_obs=d_obs)
 
     def observation(self, state):
         """Returns a modified observation."""
@@ -140,7 +140,7 @@ class ActionWrapper(MWrapper):
         """Runs the environment :meth:`env.step` using the modified ``action`` from :meth:`self.action`."""
         return self.env.step(state, self.action(action))
 
-    def action(self, action):
+    def action(self, state, action):
         """Returns a modified action before :meth:`env.step` is called."""
         raise NotImplementedError
 
@@ -204,10 +204,11 @@ class AddConstantObservationsWrapper(ObservationWrapper):
             shape = self.new_obs[obs_key].shape
             # self.observation_space = update_obs_space(self, {obs_key: shape})
 
-    def observation(self, obs):
+    def observation(self, state):
+        d_obs = state.d_obs
         for key, val in self.new_obs.items():
-            obs[key] = val
-        return obs
+            d_obs[key] = val
+        return d_obs
 
 
 class SpoofEntityWrapper(ObservationWrapper):
@@ -234,18 +235,18 @@ class SpoofEntityWrapper(ObservationWrapper):
         #     shape = list(self.observation_space.spaces[key].shape)
         #     self.observation_space = update_obs_space(self, {key + '_spoof': shape})
 
-    def observation(self, obs):
+    def observation(self, d_obs):
         for key in self.keys:
-            n_to_spoof = self.total_n_entities - obs[key].shape[1]
+            n_to_spoof = self.total_n_entities - d_obs[key].shape[1]
             if n_to_spoof > 0:
-                obs[key] = jp.concatenate([obs[key], jp.zeros((obs[key].shape[0], n_to_spoof, obs[key].shape[-1]))], 1)
+                d_obs[key] = jp.concatenate([d_obs[key], jp.zeros((d_obs[key].shape[0], n_to_spoof, d_obs[key].shape[-1]))], 1)
         for key in self.mask_keys:
-            n_to_spoof = self.total_n_entities - obs[key].shape[1]
-            obs[key + '_spoof'] = jp.concatenate([jp.ones_like(obs[key]), jp.zeros((obs[key].shape[0], n_to_spoof))], -1)
+            n_to_spoof = self.total_n_entities - d_obs[key].shape[1]
+            d_obs[key + '_spoof'] = jp.concatenate([jp.ones_like(d_obs[key]), jp.zeros((d_obs[key].shape[0], n_to_spoof))], -1)
             if n_to_spoof > 0:
-                obs[key] = jp.concatenate([obs[key], jp.zeros((obs[key].shape[0], n_to_spoof))], -1)
+                d_obs[key] = jp.concatenate([d_obs[key], jp.zeros((d_obs[key].shape[0], n_to_spoof))], -1)
 
-        return obs
+        return d_obs
 
 
 class ConcatenateObsWrapper(ObservationWrapper):
@@ -257,7 +258,8 @@ class ConcatenateObsWrapper(ObservationWrapper):
     def __init__(self, env, obs_groups):
         super().__init__(env)
         self.obs_groups = obs_groups
-    def observation(self, obs):
+    def observation(self, state):
+        d_obs = state.d_obs
         for key_to_save, keys_to_concat in self.obs_groups.items():
-            obs[key_to_save] = jp.concatenate([obs[k] for k in keys_to_concat], -1)
-        return obs
+            d_obs[key_to_save] = jp.concatenate([d_obs[k] for k in keys_to_concat], -1)
+        return d_obs

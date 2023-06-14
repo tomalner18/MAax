@@ -128,14 +128,14 @@ class Boxes(EnvModule):
 
 
 
-        obs = {'box_obs': box_obs,
+        d_obs = {'box_obs': box_obs,
         'box_angle': box_angle,
         'box_pos': box_qs[:, :3]}
 
         # obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
 
 
-        return obs
+        return d_obs
 
 
 class Ramps(EnvModule):
@@ -209,13 +209,13 @@ class Ramps(EnvModule):
         if self.pad_ramp_size:
             ramp_obs = jp.concatenate([ramp_obs, jp.zeros((ramp_obs.shape[0], 3))], -1)
 
-        obs = {'ramp_obs': ramp_obs,
+        d_obs = {'ramp_obs': ramp_obs,
         'ramp_angle': ramp_angle,
         'ramp_qpos': ramp_qs}
 
         # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
 
-        return obs
+        return d_obs
 
 
 class Cylinders(EnvModule):
@@ -280,7 +280,7 @@ class Cylinders(EnvModule):
         if self.make_static:
             s_cylinder_geom_idxs = np.expand_dims(self.s_cylinder_geom_idxs, -1)
             s_cylinder_xpos = sim.data.geom_xpos[self.s_cylinder_geom_idxs]
-            obs = {'static_cylinder_geom_idxs': s_cylinder_geom_idxs,
+            d_obs = {'static_cylinder_geom_idxs': s_cylinder_geom_idxs,
                    'static_cylinder_xpos': s_cylinder_xpos}
         else:
             m_cylinder_geom_idxs = np.expand_dims(self.m_cylinder_geom_idxs, -1)
@@ -291,11 +291,11 @@ class Cylinders(EnvModule):
             polar_angle = np.concatenate([np.cos(mc_angle), np.sin(mc_angle)], -1)
             m_cylinder_qpos = np.concatenate([m_cylinder_qpos[:, :3], polar_angle], -1)
             m_cylinder_obs = np.concatenate([m_cylinder_qpos, m_cylinder_qvel], -1)
-            obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
+            d_obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
                    'moveable_cylinder_xpos': m_cylinder_xpos,
                    'moveable_cylinder_obs': m_cylinder_obs}
 
-        return obs
+        return d_obs
 
 
 class LidarSites(EnvModule):

@@ -140,7 +140,7 @@ def get_name_index(name_indexes, name):
     return result
 
 
-def get_body_xml_node(name, use_joints=False, free=False):
+def get_body_xml_node(name, use_joints=True, free=False):
     '''
     Build a body XML dict for use in object models.
         name - name for the body (should be unique in the model, e.g. "geom4")
