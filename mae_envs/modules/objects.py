@@ -209,6 +209,7 @@ class Ramps(Module):
         if self.pad_ramp_size:
             ramp_obs = jp.concatenate([ramp_obs, jp.zeros((ramp_obs.shape[0], 3))], -1)
 
+
         d_obs = {'ramp_obs': ramp_obs,
         'ramp_angle': ramp_angle,
         'ramp_q': ramp_qs}

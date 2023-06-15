@@ -57,9 +57,7 @@ class SplitObservations(ObservationWrapper):
         self.n_agents = self.metadata['n_agents']
 
     def observation(self, state):
-        '''
-        TODO: Implement observation splitting and reshaping (n_agents, n_objects, )
-        '''
+
         d_obs = state.d_obs
         new_obs = {}
         for k, v in d_obs.items():
@@ -72,15 +70,13 @@ class SplitObservations(ObservationWrapper):
             # Circulant self keys
             elif k in self.keys_self:
                 new_obs[k + '_self'] = d_obs[k]
-                i = self._circulant(jp.arange(self.n_agents))
-                new_obs[k] = d_obs[k][i]
+                new_obs[k] = d_obs[k][self._circulant(jp.arange(self.n_agents))]
                 new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
             elif k in self.keys_copy:
+                print("Copy Key: ", k)
                 new_obs[k] = d_obs[k]
             # Everything else should just get copied for each agent (e.g. external obs)
             else:
-                print("K: ", k)
-                print("V: ", v)
                 new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
 
         return new_obs
@@ -88,10 +84,8 @@ class SplitObservations(ObservationWrapper):
     def _process_self_matrix(self, self_matrix):
         '''
             self_matrix will be a (n_agent, n_agent) boolean matrix. Permute each row such that the matrix is consistent with
-                the circulant permutation used for self observations. E.g. this should be used for agent agent masks
+                the circulant permutation used for self observations.
         '''
-
-        jax.debug.print("Shape: {}", self_matrix.shape[:2])
 
         new_mat = self_matrix.copy()
         # Permute each row to the right by one more than the previous
@@ -103,15 +97,10 @@ class SplitObservations(ObservationWrapper):
 
     def _circulant(self, c):
         '''
-        Constructs a circulant matrix
+        Constructs a circulant matrix fopr an input vector c
         '''
         n = len(c)
-        pad_size = (n - 1, 0)
-        padded_c = jp.pad(c, pad_size, mode='constant')
-        indices = jp.arange(n)
-        indices = jp.roll(indices, -1)
-        circulant_matrix = padded_c[indices[:, jp.newaxis] - indices]
-        return circulant_matrix
+        return jp.column_stack([jp.roll(c, i) for i in range(n)])
 
 
 class SelectKeysWrapper(ObservationWrapper):
@@ -149,15 +138,15 @@ class SelectKeysWrapper(ObservationWrapper):
         #     self.observation_space = Dict(obs_self)
 
     def observation(self, state):
-        # if self.flatten:
-        #     other_obs = [observation[k].reshape((observation[k].shape[0], -1))
-        #                  for k in self.keys_other]
-        #     obs = jp.concatenate([observation[k] for k in self.keys_self] + other_obs, axis=-1)
-        #     return {'observation_self': obs}
-        # else:
-        #     obs = jp.concatenate([observation[k] for k in self.keys_self], -1)
-        #     obs = {'observation_self': obs}
-        #     other_obs = {k: v for k, v in observation.items() if k in self.keys_other}
-        #     obs.update(other_obs)
-        #     return obs
-        return state.d_obs
+        d_obs = state.d_obs
+        if self.flatten:
+            other_obs = [d_obs[k].reshape((d_obs[k].shape[0], -1))
+                         for k in self.keys_other]
+            obs = jp.concatenate([d_obs[k] for k in self.keys_self] + other_obs, axis=-1)
+            return {'observation_self': obs}
+        else:
+            obs = jp.concatenate([d_obs[k] for k in self.keys_self], -1)
+            obs = {'observation_self': obs}
+            other_obs = {k: v for k, v in d_obs.items() if k in self.keys_other}
+            obs.update(other_obs)
+            return obs

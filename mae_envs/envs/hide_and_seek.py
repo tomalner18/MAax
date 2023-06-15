@@ -57,7 +57,7 @@ class TrackStatWrapper(MWrapper):
         if self.n_food > 0:
             self.total_food_eaten += jp.sum(dst_state.obs['food_eat'])
 
-        if self.in_prep_phase and dst_state.obs['prep_obs'][0, 0] == 1.0:
+        if self.in_prep_phase and dst_state.obs['prep_rem'][0, 0] == 1.0:
             # Track statistics at end of preparation phase
             self.in_prep_phase = False
 

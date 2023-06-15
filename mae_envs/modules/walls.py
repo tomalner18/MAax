@@ -483,6 +483,7 @@ class WallScenarios(Module):
         # Convert doors into brax frame
         if len(doors) > 0:
             self.door_obs = construct_door_obs(jp.array(doors), floor_size, self.grid_size)
+            self.door_obs = jp.reshape(self.door_obs, newshape=(1, -1))
         else:
             self.door_obs = None
 

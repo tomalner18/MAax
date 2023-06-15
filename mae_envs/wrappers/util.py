@@ -227,15 +227,10 @@ class SpoofEntityWrapper(ObservationWrapper):
         self.total_n_entities = total_n_entities
         self.keys = keys
         self.mask_keys = mask_keys
-        # for key in self.keys + self.mask_keys:
-        #     shape = list(self.observation_space.spaces[key].shape)
-        #     shape[1] = total_n_entities
-        #     self.observation_space = update_obs_space(self, {key: shape})
-        # for key in self.mask_keys:
-        #     shape = list(self.observation_space.spaces[key].shape)
-        #     self.observation_space = update_obs_space(self, {key + '_spoof': shape})
 
-    def observation(self, d_obs):
+
+    def observation(self, state):
+        d_obs = state.d_obs
         for key in self.keys:
             n_to_spoof = self.total_n_entities - d_obs[key].shape[1]
             if n_to_spoof > 0:
@@ -262,4 +257,29 @@ class ConcatenateObsWrapper(ObservationWrapper):
         d_obs = state.d_obs
         for key_to_save, keys_to_concat in self.obs_groups.items():
             d_obs[key_to_save] = jp.concatenate([d_obs[k] for k in keys_to_concat], -1)
+        return d_obs
+
+
+
+class FlattenDictObsWrapper(ObservationWrapper):
+    '''
+        Flatten the observation dictionary to a single vector. As required by Brax. 
+    '''
+    def __init__(self, env, n_agents):
+        super().__init__(env)
+        self.n_agents
+
+    def observation(self, state):
+        d_obs = state.d_obs
+        # Iterate through the number of agents and each key on the dictionary
+        # Create a concatenated array of all the observations in the order (agent1_obs, agent1_obs, ...)
+        obs = jp.array([])
+        for i in range(self.n_agents):
+            o = jp.concatenate([jp.ravel(v[i]) for v in d_obs.values()])
+            obs = jp.concatenate([obs, o])
+
+        # for i in range(self.n_agents):
+        #     for k, v in d_obs.items():
+        #         d_obs[k] = jp.concatenate([v[i] for i in range(v.shape[0])], -1)
+        # obs = state.d_obs.flatten()
         return d_obs

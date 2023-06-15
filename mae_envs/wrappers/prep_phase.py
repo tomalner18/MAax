@@ -36,7 +36,7 @@ class PreparationPhase(MWrapper):
 
     def observation(self, state):
         d_obs = state.d_obs
-        d_obs['prep_obs'] = (jp.ones((self.n_agents, 1)) *
+        d_obs['prep_rem'] = (jp.ones((self.n_agents, 1)) *
                            jp.minimum(1.0, state.info['in_prep_phase'] / (self.prep_time + 1e-5)))
 
         return d_obs
@@ -53,7 +53,6 @@ class PreparationPhase(MWrapper):
             lambda _: False,
             operand=None
         )
-
 
         d_obs = self.observation(dst_state)
         return dst_state.replace(d_obs=d_obs, reward=rew, info=info)

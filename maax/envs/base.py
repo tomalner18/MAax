@@ -181,7 +181,6 @@ class Base(PipelineEnv):
             Concatenates the observation dictionary into the Brax obs array
         '''
         obs = jp.concatenate([jp.ravel(v) for v in d_obs.values()])
-        jax.debug.print("Obs :{}", obs.shape)
         return obs
 
 
@@ -240,13 +239,14 @@ class Base(PipelineEnv):
         """Run one timestep of the environment's dynamics.
         Args:
             state: current state of the environment.
-            action: action to take in the environment NOTE: Action arrives in shape (n_agents, action_size)
+            action: action to take in the environment
         """
         pipeline_state0 = state.pipeline_state
 
         pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
         d_obs = self._get_d_obs(pipeline_state)
+        print('d_obs: ', d_obs)
         obs = self._concat_obs(d_obs)
 
         step = state.step + 1
