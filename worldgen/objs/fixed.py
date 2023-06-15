@@ -46,8 +46,10 @@ class Fixed(Obj):
         Returns a dictionary with keys as names of top-level nodes:
             e.g. 'worldbody', 'materials', 'assets'
         '''
+        body = get_body_xml_node(self.name, use_joints=True, free=self.free)
         geom = OrderedDict()
         geom['@size'] = self.size * 0.5
+        body['@pos'] = self.size * 0.5
         if self.geom_type == 'cylinder':
             # Mujoco expects only radius and half-length
             geom['@size'] = [geom['@size'][0], geom['@size'][2]]
@@ -56,6 +58,11 @@ class Fixed(Obj):
         geom['@name'] = self.name
         if self.rgba is not None:
             geom['@rgba'] = self.rgba
-        worldbody = OrderedDict([("geom", [geom])])
-        # xml_dict = OrderedDict(worldbody=worldbody)
+        body['geom'] = [geom]
+        xml_dict = OrderedDict()
+        xml_dict['worldbody'] = OrderedDict(body=[body])
         return xml_dict
+
+    def generate_xinit(self):
+        # MuJoCo uses center of geom as origin, while we use bottom corner
+        return {}

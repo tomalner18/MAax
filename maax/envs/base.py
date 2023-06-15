@@ -28,11 +28,14 @@ from mae_envs.modules.objects import Boxes, Ramps
 class State:
     """MAax Environment state for training and inference."""
     pipeline_state: Optional[base.State]
-    obs: Dict[str, jp.ndarray]
+    obs: jp.ndarray
+    d_obs: Dict[str, jp.ndarray]
     reward: jp.ndarray
     done: jp.ndarray
+    step: int = 0
     metrics: Dict[str, jp.ndarray] = struct.field(default_factory=dict)
-    info: Dict[str, Any] = struct.field(default_factory=dict) 
+    info: Dict[str, Any] = struct.field(default_factory=dict),
+
 
 class Base(PipelineEnv):
     '''
@@ -88,18 +91,31 @@ class Base(PipelineEnv):
     def add_module(self, module):
         self.modules.append(module)
 
-    def _get_obs(self, pipeline_state: base.State) -> jp.ndarray:
+    def _get_d_obs(self, pipeline_state: base.State) -> jp.ndarray:
         '''
             Returns the environment observation.
             Loops through modules, calls their observation_step functions, and
                 adds the result to the observation dictionary.
         '''
-        obs = {}
+        d_obs = {}
         for module in self.modules:
             # obs = jp.concatenate((obs, module.observation_step(pipeline_state)))
-            obs.update(module.observation_step(pipeline_state))
-        return obs
+            d_obs.update(module.observation_step(pipeline_state))
+        return d_obs
 
+    def _set_joint_ranges(self):
+        '''
+            Sets unlimited joint ranges for all joints in the system.
+        '''
+        lower_bound = jp.full(self.sys.dof.limit[0].shape, -jp.inf)
+        upper_bound = jp.full(self.sys.dof.limit[1].shape, jp.inf)
+        
+        # Set sys.dof.limit[0] to  at all occurences of -1
+        lower_bound = jp.where(self.sys.dof.limit[0] == -1, self.init_q[:lower_bound.size], lower_bound)
+        upper_bound = jp.where(self.sys.dof.limit[1] == 1, self.init_q[:upper_bound.size], upper_bound)
+
+        self.sys = self.sys.replace(dof=self.sys.dof.replace(limit=(lower_bound, upper_bound)))
+        
 
     def _store_joint_indices(self, init_dict):
         '''
@@ -153,16 +169,25 @@ class Base(PipelineEnv):
 
         # Store the joint indices for manipulation in observation step
         self._store_joint_indices(self.init_dict)
+        
+        self._set_joint_ranges()
 
         # Cache the joint data in the modules for observation steps
         for module in self.modules:
             module.cache_step(self)
 
+    def _concat_obs(self, d_obs):
+        '''
+            Concatenates the observation dictionary into the Brax obs array
+        '''
+        obs = jp.concatenate([jp.ravel(v) for v in d_obs.values()])
+        return obs
+
 
     def _get_xml(self, seed):
         '''
-            Calls build_world_step and then modify_sim_step for each module. If
-            a build_world_step failed, then restarts.
+            Calls build_step and then modify_sim_step for each module. If
+            a build_step failed, then restarts.
         '''
         self.floor_size = np.random.uniform(self.floor_size_dist[0], self.floor_size_dist[1])
         self.metadata['floor_size'] = self.floor_size
@@ -171,8 +196,8 @@ class Base(PipelineEnv):
         successful_placement = False
         failures = 0
         while not successful_placement:
-            if (failures + 1) % 10 == 0:
-                logging.warning(f"Failed {failures} times in creating environment")
+            # if (failures + 1) % 10 == 0:
+            #     logging.warning(f"Failed {failures} times in creating environment")
             builder = WorldBuilder(world_params, seed)
             floor = Floor()
 
@@ -180,15 +205,18 @@ class Base(PipelineEnv):
 
             self.placement_grid = np.zeros((self.grid_size, self.grid_size))
 
-            successful_placement = np.all([module.build_world_step(self, floor, self.floor_size)
+            successful_placement = np.all([module.build_step(self, floor, self.floor_size)
                                            for module in self.modules])
             failures += 1
 
         return builder.get_xml()
+  
+
 
     def set_info(self) -> Dict[str, Any]:
         """Sets the environment info."""
-        return {'in_prep_phase': True}
+        return {'in_prep_phase': True,
+                'step_count': 0}
 
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
@@ -198,29 +226,32 @@ class Base(PipelineEnv):
         init_qd = jp.zeros(self.sys.qd_size())
 
         pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
-        obs = self._get_obs(pipeline_state)
+        d_obs = self._get_d_obs(pipeline_state)
+        obs = self._concat_obs(d_obs)
         reward = jp.zeros(shape=(self.n_agents,))
         done, zero = jp.zeros(2)
         info = self.set_info()
         metrics = {}
-        return State(pipeline_state=pipeline_state, obs=obs, reward=reward, done=done, metrics=metrics, info=info)
+        return State(pipeline_state=pipeline_state, obs=obs, d_obs=d_obs, reward=reward, done=done, metrics=metrics, info=info)
 
 
     def step(self, state: State, action: jp.ndarray) -> State:
         """Run one timestep of the environment's dynamics.
         Args:
             state: current state of the environment.
-            action: action to take in the environment NOTE: Action arrives in shape (n_agents, action_size)
+            action: action to take in the environment
         """
         pipeline_state0 = state.pipeline_state
 
         pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
-        obs = self._get_obs(pipeline_state)
+        d_obs = self._get_d_obs(pipeline_state)
+        print('d_obs: ', d_obs)
+        obs = self._concat_obs(d_obs)
 
-        reward = jp.zeros(shape=(self.n_agents,))
+        step = state.step + 1
 
-        return state.replace(pipeline_state=pipeline_state, obs=obs, reward=reward)
+        return state.replace(pipeline_state=pipeline_state, obs=obs, d_obs=d_obs, step=step)
 
     @property
     def dt(self) -> jp.ndarray:

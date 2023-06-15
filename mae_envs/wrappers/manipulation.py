@@ -168,9 +168,9 @@ class LockObjWrapper(MWrapper):
         sim.model.jnt_limited[joints_to_unlock] = 0
         sim.model.jnt_limited[joints_to_lock] = 1
 
-        # For objs we need to newly lock, set the joint ranges to the current qpos of the obj.
+        # For objs we need to newly lock, set the joint ranges to the current q of the obj.
         for obj in np.argwhere(new_objs_to_lock)[:, 0]:
-            sim.model.jnt_range[self.obj_jnt_idxs[obj], :] = sim.data.qpos[self.obj_jnt_idxs[obj], None]
+            sim.model.jnt_range[self.obj_jnt_idxs[obj], :] = sim.data.q[self.obj_jnt_idxs[obj], None]
             self.which_locked[obj] = np.random.choice(self.agent_idx_allowed_to_lock[
                         np.argwhere(allowed_and_desired[:, obj]).flatten()])
 

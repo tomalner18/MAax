@@ -68,14 +68,14 @@ def uniform_placement(grid, obj_size, metadata, random_state):
     return pos
 
 
-def close_to_other_object_placement(object_type, object_index, radius_key):
+def proximity_placement(object_type, object_index, radius_key):
     def close_placement_fn(grid, obj_size, metadata, random_state):
         init_pos_key = f"{object_type}{object_index}_initpos"
 
         assert init_pos_key in metadata, \
             f"First object position must be specified in metadata['{init_pos_key}']"
         assert radius_key in metadata, \
-            f"metadata['{radius_key}'] mus be specified."
+            f"metadata['{radius_key}'] must be specified."
 
         grid_size = len(grid)
 
@@ -122,7 +122,7 @@ def uniform_placement_middle(area_side_length_fraction):
     return uniform_placement_middle_fn
 
 
-def center_placement(grid, obj_size_in_cells, metadata, random_state):
+def centre_placement(grid, obj_size_in_cells, metadata, random_state):
     half_grid_size = int(len(grid) / 2)
     pos = np.array([half_grid_size - int(obj_size_in_cells[0]/2),
                     half_grid_size - int(obj_size_in_cells[1]/2)])

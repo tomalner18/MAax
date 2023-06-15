@@ -1,19 +1,19 @@
 import numpy as np
 from worldgen.util.types import store_args
-from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
-                                            qvel_idxs_from_joint_prefix)
+from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
+                                            qd_idxs_from_joint_prefix)
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
                                       set_joint_damping_transform)
-from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
+from mae_envs.modules import Module, rejection_placement, get_size_from_xml
 from worldgen import ObjFromXML
 
 import jax
 from jax import numpy as jp
 
 
-class Agents(EnvModule):
+class Agents(Module):
     '''
         Add Agents to the environment.
         Args:
@@ -32,7 +32,7 @@ class Agents(EnvModule):
                  damp_z=False, polar_obs=True, slide=False, arm=True):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         env.metadata['n_agents'] = self.n_agents
         successful_placement = True
 
@@ -75,9 +75,9 @@ class Agents(EnvModule):
         # Cache q, qd idxs
         self.agent_q_idxs = env.q_indices['agent']
         self.agent_qd_idxs = env.qd_indices['agent']
-        # self.agent_qpos_idxs = np.array([qpos_idxs_from_joint_prefix(sim, f'agent{i}')
+        # self.agent_q_idxs = np.array([q_idxs_from_joint_prefix(sim, f'agent{i}')
         #                                  for i in range(self.n_agents)])
-        # self.agent_qvel_idxs = np.array([qvel_idxs_from_joint_prefix(sim, f'agent{i}')
+        # self.agent_qd_idxs = np.array([qd_idxs_from_joint_prefix(sim, f'agent{i}')
         #                                 for i in range(self.n_agents)])
         # env.metadata['agent_geom_idxs'] = [sim.model.geom_name2id(f'agent{i}:agent')
         #                                    for i in range(self.n_agents)]
@@ -101,10 +101,10 @@ class Agents(EnvModule):
         # if self.polar_obs:
         #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
         # agent_angle = normalize_angles(agent_angle)
-        obs = {
-            'agent_qpos_qvel': agent_q_qd,
+        d_obs = {
+            'agent_q_qd': agent_q_qd,
             # 'agent_angle': agent_angle,
             'agent_pos': agent_q}
 
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
-        return obs
+        return d_obs

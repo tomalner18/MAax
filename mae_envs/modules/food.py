@@ -1,9 +1,9 @@
 import numpy as np
 from worldgen.util.types import store_args
-from mae_envs.modules import EnvModule, rejection_placement
+from mae_envs.modules import Module, rejection_placement
 
 
-class Food(EnvModule):
+class Food(Module):
     '''
     Add food sites to the environment.
         Args:
@@ -19,7 +19,7 @@ class Food(EnvModule):
             self.n_food = [n_food, n_food]
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         env.metadata['food_size'] = self.food_size
         self.curr_n_food = env._random_state.randint(self.n_food[0], self.n_food[1] + 1)
         env.metadata['max_n_food'] = self.n_food[1]

@@ -20,7 +20,7 @@ class SplitMultiAgentActions(ActionWrapper):
         #                               for low, high in zip(lows, highs)])
         # })
 
-    def action(self, action):
+    def action(self, state, action):
         return action['action_movement'].ravel()
 
 
@@ -32,7 +32,7 @@ class JoinMultiAgentActions(ActionWrapper):
         high = jp.concatenate([space.high for space in self.action_space.spaces])
         self.action_space = Box(low=low, high=high, dtype=self.action_space.spaces[0].dtype)
 
-    def action(self, action):
+    def action(self, state, action):
         # action should be a tuple of different agent actions
         return jp.split(action, self.n_agents)
 
@@ -42,7 +42,7 @@ class SplitObservations(ObservationWrapper):
         Split observations for each agent.
         Args:
             keys_self: list of observation names which are agent specific. E.g. this will
-                    permute qpos such that each agent sees its own qpos as the first numbers
+                    permute q such that each agent sees its own q as the first numbers
             keys_copy: list of observation names that are just passed down as is
             keys_self_matrices: list of observation names that should be (n_agent, n_agent, dim) where
                 each agent has a custom observation of another agent. This is different from self_keys
@@ -56,47 +56,51 @@ class SplitObservations(ObservationWrapper):
         self.keys_self_matrices = sorted(keys_self_matrices)
         self.n_agents = self.metadata['n_agents']
 
-    def observation(self, obs):
-        '''
-        TODO: Implement observation splitting and reshaping (n_agents, n_objects, )
-        '''
-        # new_obs = {}
-        # for k, v in obs.items():
-        #     # Masks that aren't self matrices should just be copied
-        #     if 'mask' in k and k not in self.keys_self_matrices:
-        #         new_obs[k] = obs[k]
-        #     # Circulant self matrices
-        #     elif k in self.keys_self_matrices:
-        #         new_obs[k] = self._process_self_matrix(obs[k])
-        #     # Circulant self keys
-        #     elif k in self.keys_self:
-        #         new_obs[k + '_self'] = obs[k]
-        #         new_obs[k] = obs[k][circulant(jp.arange(self.n_agents))]
-        #         new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
-        #     elif k in self.keys_copy:
-        #         new_obs[k] = obs[k]
-        #     # Everything else should just get copied for each agent (e.g. external obs)
-        #     else:
-        #         new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
+    def observation(self, state):
 
-        # return new_obs
-        return obs
+        d_obs = state.d_obs
+        new_obs = {}
+        for k, v in d_obs.items():
+            # Masks that aren't self matrices should just be copied
+            if 'mask' in k and k not in self.keys_self_matrices:
+                new_obs[k] = d_obs[k]
+            # Circulant self matrices
+            elif k in self.keys_self_matrices:
+                new_obs[k] = self._process_self_matrix(d_obs[k])
+            # Circulant self keys
+            elif k in self.keys_self:
+                new_obs[k + '_self'] = d_obs[k]
+                new_obs[k] = d_obs[k][self._circulant(jp.arange(self.n_agents))]
+                new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
+            elif k in self.keys_copy:
+                print("Copy Key: ", k)
+                new_obs[k] = d_obs[k]
+            # Everything else should just get copied for each agent (e.g. external obs)
+            else:
+                new_obs[k] = jp.tile(v, self.n_agents).reshape([v.shape[0], self.n_agents, v.shape[1]]).transpose((1, 0, 2))
+
+        return new_obs
 
     def _process_self_matrix(self, self_matrix):
         '''
             self_matrix will be a (n_agent, n_agent) boolean matrix. Permute each row such that the matrix is consistent with
-                the circulant permutation used for self observations. E.g. this should be used for agent agent masks
+                the circulant permutation used for self observations.
         '''
-        assert jp.all(self_matrix.shape[:2] == jp.array((self.n_agents, self.n_agents))), \
-            f"The first two dimensions of {self_matrix} were not (n_agents, n_agents)"
 
         new_mat = self_matrix.copy()
         # Permute each row to the right by one more than the previous
         # E.g., [[1,2],[3,4]] -> [[1,2],[4,3]]
-        idx = circulant(jp.arange(self.n_agents))
+        idx = self._circulant(jp.arange(self.n_agents))
         new_mat = new_mat[jp.arange(self.n_agents)[:, None], idx]
         new_mat = new_mat[:, 1:]  # Remove self observation
         return new_mat
+
+    def _circulant(self, c):
+        '''
+        Constructs a circulant matrix fopr an input vector c
+        '''
+        n = len(c)
+        return jp.column_stack([jp.roll(c, i) for i in range(n)])
 
 
 class SelectKeysWrapper(ObservationWrapper):
@@ -133,16 +137,16 @@ class SelectKeysWrapper(ObservationWrapper):
         #     obs_self.update(obs_extern)
         #     self.observation_space = Dict(obs_self)
 
-    def observation(self, observation):
-        # if self.flatten:
-        #     other_obs = [observation[k].reshape((observation[k].shape[0], -1))
-        #                  for k in self.keys_other]
-        #     obs = jp.concatenate([observation[k] for k in self.keys_self] + other_obs, axis=-1)
-        #     return {'observation_self': obs}
-        # else:
-        #     obs = jp.concatenate([observation[k] for k in self.keys_self], -1)
-        #     obs = {'observation_self': obs}
-        #     other_obs = {k: v for k, v in observation.items() if k in self.keys_other}
-        #     obs.update(other_obs)
-        #     return obs
-        return observation
+    def observation(self, state):
+        d_obs = state.d_obs
+        if self.flatten:
+            other_obs = [d_obs[k].reshape((d_obs[k].shape[0], -1))
+                         for k in self.keys_other]
+            obs = jp.concatenate([d_obs[k] for k in self.keys_self] + other_obs, axis=-1)
+            return {'observation_self': obs}
+        else:
+            obs = jp.concatenate([d_obs[k] for k in self.keys_self], -1)
+            obs = {'observation_self': obs}
+            other_obs = {k: v for k, v in d_obs.items() if k in self.keys_other}
+            obs.update(other_obs)
+            return obs

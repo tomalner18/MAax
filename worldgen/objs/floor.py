@@ -9,7 +9,7 @@ class Floor(Obj):
     Floor() is essentially a special box geom used as the base of experiments.
     It has no joints, so is essentially an immovable object.
     Placement is calculated in a fixed position, and encoded in XML,
-        as opposed to in qpos, which other objects use.
+        as opposed to in q, which other objects use.
     '''
     @store_args
     def __init__(self, geom_type='plane'):

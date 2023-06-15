@@ -108,9 +108,9 @@ def make_env(n_substeps=5, horizon=250, deterministic_mode=False, n_agents=2,
         env.add_module(Ramps(n_ramps=n_ramps))
     env.add_module(Agents(n_agents))
     env.reset()
-    keys_self = ['agent_qpos_qvel']
+    keys_self = ['agent_q_qd']
     keys_mask_self = ['mask_aa_obs']
-    keys_external = ['agent_qpos_qvel']
+    keys_external = ['agent_q_qd']
     keys_mask_external = []
     env = SplitMultiAgentActions(env)
     env = DiscretizeActionWrapper(env, 'action_movement')

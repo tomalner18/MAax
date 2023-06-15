@@ -1,18 +1,18 @@
 import numpy as np
 from worldgen.util.types import store_args
-from worldgen.util.sim_funcs import (qpos_idxs_from_joint_prefix,
-                                            qvel_idxs_from_joint_prefix)
+from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
+                                            qd_idxs_from_joint_prefix)
 from worldgen import Geom, Material, ObjFromXML
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
 from mae_envs.util.transforms import remove_hinge_axis_transform
-from mae_envs.modules import EnvModule, rejection_placement, get_size_from_xml
+from mae_envs.modules import Module, rejection_placement, get_size_from_xml
 
 import jax
 from jax import numpy as jp
 
 
-class Boxes(EnvModule):
+class Boxes(Module):
     '''
     Add moveable boxes to the environment.
         Args:
@@ -45,7 +45,7 @@ class Boxes(EnvModule):
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
             self.n_elongated_boxes = [n_elongated_boxes, n_elongated_boxes]
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         env.metadata['box_size'] = self.box_size
 
         self.curr_n_boxes = env._random_state.randint(self.n_boxes[0], self.n_boxes[1] + 1)
@@ -128,17 +128,17 @@ class Boxes(EnvModule):
 
 
 
-        obs = {'box_obs': box_obs,
+        d_obs = {'box_obs': box_obs,
         'box_angle': box_angle,
         'box_pos': box_qs[:, :3]}
 
         # obs = jp.concatenate((box_obs, box_angle, box_qs[:, :3]))
 
 
-        return obs
+        return d_obs
 
 
-class Ramps(EnvModule):
+class Ramps(Module):
     '''
     Add moveable ramps to the environment.
         Args:
@@ -155,7 +155,7 @@ class Ramps(EnvModule):
                  pad_ramp_size=False, free=True):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         successful_placement = True
 
         env.metadata['curr_n_ramps'] = np.ones((self.n_ramps)).astype(bool)
@@ -209,16 +209,17 @@ class Ramps(EnvModule):
         if self.pad_ramp_size:
             ramp_obs = jp.concatenate([ramp_obs, jp.zeros((ramp_obs.shape[0], 3))], -1)
 
-        obs = {'ramp_obs': ramp_obs,
+
+        d_obs = {'ramp_obs': ramp_obs,
         'ramp_angle': ramp_angle,
-        'ramp_qpos': ramp_qs}
+        'ramp_q': ramp_qs}
 
-        # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_qpos[:, :3]))
+        # obs = jp.concatenate((ramp_obs, ramp_angle, ramp_q[:, :3]))
 
-        return obs
+        return d_obs
 
 
-class Cylinders(EnvModule):
+class Cylinders(Module):
     '''
         Add cylinders to the environment.
         Args:
@@ -243,7 +244,7 @@ class Cylinders(EnvModule):
         if type(height) not in [list, np.ndarray]:
             self.height = [height, height]
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         default_name = 'static_cylinder' if self.make_static else 'moveable_cylinder'
         diameter = env._random_state.uniform(self.diameter[0], self.diameter[1])
         height = env._random_state.uniform(self.height[0], self.height[1])
@@ -274,31 +275,31 @@ class Cylinders(EnvModule):
         self.cylinder_qd_idxs = env.qd_indices['moveable_cylinder']
 
     def observation_step(self, env, sim):
-        qpos = sim.data.qpos.copy()
-        qvel = sim.data.qvel.copy()
+        q = sim.data.q.copy()
+        qd = sim.data.qd.copy()
 
         if self.make_static:
             s_cylinder_geom_idxs = np.expand_dims(self.s_cylinder_geom_idxs, -1)
             s_cylinder_xpos = sim.data.geom_xpos[self.s_cylinder_geom_idxs]
-            obs = {'static_cylinder_geom_idxs': s_cylinder_geom_idxs,
+            d_obs = {'static_cylinder_geom_idxs': s_cylinder_geom_idxs,
                    'static_cylinder_xpos': s_cylinder_xpos}
         else:
             m_cylinder_geom_idxs = np.expand_dims(self.m_cylinder_geom_idxs, -1)
             m_cylinder_xpos = sim.data.geom_xpos[self.m_cylinder_geom_idxs]
-            m_cylinder_qpos = qpos[self.m_cylinder_qpos_idxs]
-            m_cylinder_qvel = qvel[self.m_cylinder_qvel_idxs]
-            mc_angle = normalize_angles(m_cylinder_qpos[:, 3:])
+            m_cylinder_q = q[self.m_cylinder_q_idxs]
+            m_cylinder_qd = qd[self.m_cylinder_qd_idxs]
+            mc_angle = normalize_angles(m_cylinder_q[:, 3:])
             polar_angle = np.concatenate([np.cos(mc_angle), np.sin(mc_angle)], -1)
-            m_cylinder_qpos = np.concatenate([m_cylinder_qpos[:, :3], polar_angle], -1)
-            m_cylinder_obs = np.concatenate([m_cylinder_qpos, m_cylinder_qvel], -1)
-            obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
+            m_cylinder_q = np.concatenate([m_cylinder_q[:, :3], polar_angle], -1)
+            m_cylinder_obs = np.concatenate([m_cylinder_q, m_cylinder_qd], -1)
+            d_obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
                    'moveable_cylinder_xpos': m_cylinder_xpos,
                    'moveable_cylinder_obs': m_cylinder_obs}
 
-        return obs
+        return d_obs
 
 
-class LidarSites(EnvModule):
+class LidarSites(Module):
     '''
     Adds sites to visualize Lidar rays
         Args:
@@ -309,7 +310,7 @@ class LidarSites(EnvModule):
     def __init__(self, n_agents, n_lidar_per_agent):
         pass
 
-    def build_world_step(self, env, floor, floor_size):
+    def build_step(self, env, floor, floor_size):
         for i in range(self.n_agents):
             for j in range(self.n_lidar_per_agent):
                 floor.mark(f"agent{i}:lidar{j}", (0.0, 0.0, 0.0), rgba=np.zeros((4,)))
