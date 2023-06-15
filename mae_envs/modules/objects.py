@@ -102,7 +102,8 @@ class Boxes(Module):
 
 
     def observation_step(self, state):
-        # Boxes have 6 qs (pos, rot) and 6 qds (vel, angv)
+                # If Free: Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
+        # If not Free: Ramps have 6 qs (pos, rot) and 7 qds (vel, angv, angv2)
         qs = state.q.copy()
         qds = state.qd.copy()
 
@@ -111,10 +112,15 @@ class Boxes(Module):
         box_qs = qs[self.box_q_idxs]
         box_qds = qds[self.box_qd_idxs]
 
-        box_qs = jp.reshape(box_qs, newshape=(-1,7))
-        box_qds = jp.reshape(box_qds, newshape=(-1,6))
+        if self.free:
+            box_qs = jp.reshape(box_qs, newshape=(-1,7))
+            box_qds = jp.reshape(box_qds, newshape=(-1,6))
+            box_angle = normalize_angles(box_qs[:, 4:])
 
-        box_angle = normalize_angles(box_qs[:, 4:])
+        else:
+            box_qs = jp.reshape(box_qs, newshape=(-1,3))
+            box_qds = jp.reshape(box_qds, newshape=(-1,3))
+            box_angle = normalize_angles(box_qs[:, [-1]])
 
         polar_angle = jp.concatenate([jp.cos(box_angle), jp.sin(box_angle)], -1)
         if self.polar_obs:
@@ -190,17 +196,32 @@ class Ramps(Module):
 
 
     def observation_step(self, state):
-        # Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
+        # If Free: Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
+        # If not Free: Ramps have 6 qs (pos, rot) and 7 qds (vel, angv, angv2)
         qs = state.q.copy()
         qds = state.qd.copy()
 
-        ramp_qs = qs[self.ramp_q_idxs]
-        ramp_qds = qds[self.ramp_qd_idxs]
+        if self.free:
 
-        ramp_qs = jp.reshape(ramp_qs, newshape=(-1,7))
-        ramp_qds = jp.reshape(ramp_qds, newshape=(-1,6))
+            ramp_qs = qs[self.ramp_q_idxs]
+            ramp_qds = qds[self.ramp_qd_idxs]
 
-        ramp_angle = normalize_angles(ramp_qs[:, 4:])
+            ramp_qs = jp.reshape(ramp_qs, newshape=(-1,7))
+            ramp_qds = jp.reshape(ramp_qds, newshape=(-1,6))
+
+            ramp_angle = normalize_angles(ramp_qs[:, 4:])
+
+        else:
+
+            ramp_qs = qs[self.ramp_q_idxs]
+            ramp_qds = qds[self.ramp_qd_idxs]
+
+            ramp_qs = jp.reshape(ramp_qs, newshape=(-1,3))
+            ramp_qds = jp.reshape(ramp_qds, newshape=(-1,3))
+
+            ramp_angle = normalize_angles(ramp_qs[:, [-1]])
+
+
         polar_angle = jp.concatenate([jp.cos(ramp_angle), jp.sin(ramp_angle)], -1)
         if self.polar_obs:
             ramp_qs = jp.concatenate([ramp_qs[:, :3], polar_angle], -1)
@@ -218,109 +239,3 @@ class Ramps(Module):
 
         return d_obs
 
-
-class Cylinders(Module):
-    '''
-        Add cylinders to the environment.
-        Args:
-            n_objects (int): Number of cylinders
-            diameter (float or (float, float)): Diameter of cylinders. If tuple of floats, every
-                episode the diameter is drawn uniformly from (diameter[0], diameter[1]).
-                (Note that all cylinders within an episode still share the same diameter)
-            height (float or (float, float)): Height of cylinders. If tuple of floats, every
-                episode the height is drawn uniformly from (height[0], height[1]).
-                (Note that all cylinders within an episode still share the same height)
-            make_static (bool): Makes the cylinders static, preventing them from moving. Note that
-                the observations (and observation keys) are different when make_static=True
-            placement_fn (fn or list of fns): See mae_envs.modules.util:rejection_placement for spec
-                If list of functions, then it is assumed there is one function given per cylinder
-            rgba ([float, float, float, float]): Determines cylinder color.
-    '''
-    @store_args
-    def __init__(self, n_objects, diameter, height, make_static=False,
-                 placement_fn=None, rgba=[1., 1., 1., 1.]):
-        if type(diameter) not in [list, np.ndarray]:
-            self.diameter = [diameter, diameter]
-        if type(height) not in [list, np.ndarray]:
-            self.height = [height, height]
-
-    def build_step(self, env, floor, floor_size):
-        default_name = 'static_cylinder' if self.make_static else 'moveable_cylinder'
-        diameter = env._random_state.uniform(self.diameter[0], self.diameter[1])
-        height = env._random_state.uniform(self.height[0], self.height[1])
-        obj_size = (diameter, height, 0)
-        successful_placement = True
-        for i in range(self.n_objects):
-            geom = Geom('cylinder', obj_size, name=f'{default_name}{i}', rgba=self.rgba)
-            if self.make_static:
-                geom.mark_static()
-
-            if self.placement_fn is not None:
-                _placement_fn = (self.placement_fn[i]
-                                 if isinstance(self.placement_fn, list)
-                                 else self.placement_fn)
-                pos, _ = rejection_placement(env, _placement_fn, floor_size, diameter * np.ones(2))
-                if pos is not None:
-                    floor.append(geom, placement_xy=pos)
-                else:
-                    successful_placement = False
-            else:
-                floor.append(geom)
-
-        return successful_placement
-
-    def cache_step(self, env):
-        # Cache q, qd indices
-        self.cylinder_q_idxs = env.q_indices['moveable_cylinder']
-        self.cylinder_qd_idxs = env.qd_indices['moveable_cylinder']
-
-    def observation_step(self, env, sim):
-        q = sim.data.q.copy()
-        qd = sim.data.qd.copy()
-
-        if self.make_static:
-            s_cylinder_geom_idxs = np.expand_dims(self.s_cylinder_geom_idxs, -1)
-            s_cylinder_xpos = sim.data.geom_xpos[self.s_cylinder_geom_idxs]
-            d_obs = {'static_cylinder_geom_idxs': s_cylinder_geom_idxs,
-                   'static_cylinder_xpos': s_cylinder_xpos}
-        else:
-            m_cylinder_geom_idxs = np.expand_dims(self.m_cylinder_geom_idxs, -1)
-            m_cylinder_xpos = sim.data.geom_xpos[self.m_cylinder_geom_idxs]
-            m_cylinder_q = q[self.m_cylinder_q_idxs]
-            m_cylinder_qd = qd[self.m_cylinder_qd_idxs]
-            mc_angle = normalize_angles(m_cylinder_q[:, 3:])
-            polar_angle = np.concatenate([np.cos(mc_angle), np.sin(mc_angle)], -1)
-            m_cylinder_q = np.concatenate([m_cylinder_q[:, :3], polar_angle], -1)
-            m_cylinder_obs = np.concatenate([m_cylinder_q, m_cylinder_qd], -1)
-            d_obs = {'moveable_cylinder_geom_idxs': m_cylinder_geom_idxs,
-                   'moveable_cylinder_xpos': m_cylinder_xpos,
-                   'moveable_cylinder_obs': m_cylinder_obs}
-
-        return d_obs
-
-
-class LidarSites(Module):
-    '''
-    Adds sites to visualize Lidar rays
-        Args:
-            n_agents (int): number of agents
-            n_lidar_per_agent (int): number of lidar sites per agent
-    '''
-    @store_args
-    def __init__(self, n_agents, n_lidar_per_agent):
-        pass
-
-    def build_step(self, env, floor, floor_size):
-        for i in range(self.n_agents):
-            for j in range(self.n_lidar_per_agent):
-                floor.mark(f"agent{i}:lidar{j}", (0.0, 0.0, 0.0), rgba=np.zeros((4,)))
-        return True
-
-    def modify_sim_step(self, env, sim):
-        # set lidar size and shape
-        self.lidar_ids = np.array([[sim.model.site_name2id(f"agent{i}:lidar{j}")
-                                    for j in range(self.n_lidar_per_agent)]
-                                   for i in range(self.n_agents)])
-        # set lidar site shape to cylinder
-        sim.model.site_type[self.lidar_ids] = 5
-        sim.model.site_size[self.lidar_ids, 0] = 0.02

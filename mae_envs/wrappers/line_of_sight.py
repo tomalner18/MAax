@@ -18,7 +18,6 @@ class AgentAgentContactMask2D(ObservationWrapper):
     def observation(self, state):
         # Agent to agent contact mask
         d_obs = state.d_obs
-        # print('AA d_obs: ', d_obs)
         agent_pos2d = d_obs['agent_pos'][:, :-1]
         contact_mask = caught(agent_pos2d, self.distance_threshold)
 

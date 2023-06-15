@@ -83,9 +83,6 @@ class Agents(Module):
         #                                    for i in range(self.n_agents)]
 
     def observation_step(self, state):
-        '''
-        NOTE: Currently agents move via 2D translation. Thus they don't have a rotation
-        '''
         qs = state.q.copy()
         qds = state.qd.copy()
 
@@ -95,15 +92,15 @@ class Agents(Module):
         
         agent_q = jp.reshape(agent_q, newshape=(-1,3))
         agent_qd = jp.reshape(agent_qd, newshape=(-1,3))
-        # agent_angle = agent_q[:, [-1]] - np.pi / 2  # Rotate the angle to match visual front
+        agent_angle = agent_q[:, [-1]] - jp.pi / 2  # Rotate the angle to match visual front
         agent_q_qd = jp.concatenate([agent_q, agent_qd], -1)
-        # polar_angle = jp.concatenate([np.cos(agent_angle), np.sin(agent_angle)], -1)
-        # if self.polar_obs:
-        #     agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
-        # agent_angle = normalize_angles(agent_angle)
+        polar_angle = jp.concatenate([jp.cos(agent_angle), jp.sin(agent_angle)], -1)
+        if self.polar_obs:
+            agent_q = jp.concatenate([agent_q[:, :-1], polar_angle], -1)
+        agent_angle = normalize_angles(agent_angle)
         d_obs = {
             'agent_q_qd': agent_q_qd,
-            # 'agent_angle': agent_angle,
+            'agent_angle': agent_angle,
             'agent_pos': agent_q}
 
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])

@@ -352,8 +352,6 @@ class RandomWalls(Module):
         if self.gen_door_obs:
             self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
 
-        print(self.door_obs)
-
         walls_to_brax(floor, floor_size, self.grid_size, walls, friction=self.friction)
         add_walls_to_grid(env.placement_grid, walls)
         return True
