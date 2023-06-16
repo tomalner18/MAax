@@ -4,7 +4,7 @@ from jax import numpy as jp
 from copy import deepcopy
 from maax.envs.base import Base
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions,
-                                           SplitObservations, SelectKeysWrapper)
+                                           SplitObservations, SelectObsWrapper)
 from mae_envs.wrappers.util import (ConcatenateObsWrapper,
                                     MaskActionWrapper, SpoofEntityWrapper,
                                     AddConstantObservationsWrapper, MWrapper)
@@ -31,11 +31,10 @@ class TrackStatWrapper(MWrapper):
         Keeps track of important statistics that are indicative of hide and seek
         dynamics
     '''
-    def __init__(self, env, n_boxes, n_ramps, n_food):
+    def __init__(self, env, n_boxes, n_ramps):
         super().__init__(env)
         self.n_boxes = n_boxes
         self.n_ramps = n_ramps
-        self.n_food = n_food
 
     def reset(self, rng):
         state = self.env.reset(rng)
@@ -43,8 +42,6 @@ class TrackStatWrapper(MWrapper):
             self.box_pos_start = state.obs['box_pos']
         if self.n_ramps > 0:
             self.ramp_pos_start = state.obs['ramp_pos']
-        if self.n_food > 0:
-            self.total_food_eaten = jp.sum(state.obs['food_eat'])
 
         self.in_prep_phase = True
 
@@ -53,9 +50,6 @@ class TrackStatWrapper(MWrapper):
     def step(self, state, action):
         dst_state = self.env.step(state, action)
         info = deepcopy(dst_state.info)
-
-        if self.n_food > 0:
-            self.total_food_eaten += jp.sum(dst_state.obs['food_eat'])
 
         if self.in_prep_phase and dst_state.obs['prep_rem'][0, 0] == 1.0:
             # Track statistics at end of preparation phase
@@ -68,8 +62,7 @@ class TrackStatWrapper(MWrapper):
                 self.max_ramp_move_prep = jp.max(jp.linalg.norm(dst_state.obs['ramp_pos'] - self.ramp_pos_start, axis=-1))
                 if 'ramp_obj_lock' in dst_state.obs:
                     self.num_ramp_lock_prep = jp.sum(dst_state.obs['ramp_obj_lock'])
-            if self.n_food > 0:
-                self.total_food_eaten_prep = self.total_food_eaten
+
 
         if dst_state.done:
             # Track statistics at end of episode
@@ -92,11 +85,6 @@ class TrackStatWrapper(MWrapper):
                     info.update({
                         'num_ramp_lock_prep': self.num_ramp_lock_prep,
                         'num_ramp_lock': self.num_ramp_lock})
-
-            if self.n_food > 0:
-                info.update({
-                    'food_eaten': self.total_food_eaten,
-                    'food_eaten_prep': self.total_food_eaten_prep})
 
         return dst_state.replace(info=info)
 

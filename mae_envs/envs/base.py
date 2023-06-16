@@ -2,7 +2,7 @@ import numpy as np
 import logging
 from worldgen import Floor, WorldBuilder, WorldParams, Env
 from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions, SplitObservations,
-                                           SelectKeysWrapper)
+                                           SelectObsWrapper)
 from mae_envs.wrappers.util import DiscretizeActionWrapper
 from mae_envs.wrappers.line_of_sight import AgentAgentObsMask2D
 from mae_envs.modules.agents import Agents
@@ -116,7 +116,7 @@ def make_env(n_substeps=5, horizon=250, deterministic_mode=False, n_agents=2,
     env = DiscretizeActionWrapper(env, 'action_movement')
     env = AgentAgentObsMask2D(env)
     env = SplitObservations(env, keys_self + keys_mask_self)
-    env = SelectKeysWrapper(env, keys_self=keys_self,
+    env = SelectObsWrapper(env, keys_self=keys_self,
                             keys_other=keys_external + keys_mask_self + keys_mask_external)
     # env = DiscardMujocoExceptionEpisodes(env)
     return env

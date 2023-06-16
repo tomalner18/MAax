@@ -215,7 +215,7 @@ class SpoofEntityWrapper(ObservationWrapper):
     '''
         Add extra entities along entity dimension such that shapes can match between
             environments with differing number of entities. This is meant to be used
-            after SplitObservations and SelectKeysWrapper. This will also add masks that are
+            after SplitObservations and SelectObsWrapper. This will also add masks that are
             1 except along the new columns (which could be used by fully observed value function)
         Args:
             total_n_entities (int): total number of entities after spoofing (including spoofed ones)
