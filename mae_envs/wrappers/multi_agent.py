@@ -103,7 +103,7 @@ class SplitObservations(ObservationWrapper):
         return jp.column_stack([jp.roll(c, i) for i in range(n)])
 
 
-class SelectKeysWrapper(ObservationWrapper):
+class SelectObsWrapper(ObservationWrapper):
     """
         Select keys for final observations.
         Expects that all observations come in shape (n_agents, n_objects, n_dims)
