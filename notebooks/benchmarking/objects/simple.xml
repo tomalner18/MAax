@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-	<compiler angle="radian" coordinate="local" meshdir="/Users/tom/dev/imperial/FYP/MAax/assets/stls" texturedir="/Users/tom/dev/imperial/FYP/MAax/assets/textures" autolimits="true"></compiler>
+	<compiler angle="radian" coordinate="local" meshdir="/rds/general/user/tla19/home/FYP/MAax/assets/stls" texturedir="/rds/general/user/tla19/home/FYP/MAax/assets/textures" autolimits="true"></compiler>
 	<option timestep="0.005">
 		<flag warmstart="enable"></flag>
 	</option>
@@ -94,6 +94,24 @@
 			<joint name="moveable-box3_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
 			<joint name="moveable-box3_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box3" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		</body>
+		<body name="moveable-box4" pos="0.25 0.25 0.25">
+			<joint name="moveable-box4_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box4_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box4_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box4" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		</body>
+		<body name="moveable-box5" pos="0.25 0.25 0.25">
+			<joint name="moveable-box5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box5_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box5" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
+		</body>
+		<body name="moveable-box6" pos="0.25 0.25 0.25">
+			<joint name="moveable-box6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box6_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box6" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 	</worldbody>
 	<actuator>
