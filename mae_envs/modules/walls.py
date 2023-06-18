@@ -303,9 +303,9 @@ class RandomWalls(Module):
             min_room_size (int): minimum size of a room in grid cells
             door_size (int): size of doors in grid cells
             friction (float): wall friction
-            outside_walls (bool): If false, don't add outside walls to mujoco
+            outside_walls (bool): If false, don't add outside walls
             outside_wall_rgba (array): RGBA color of outside walls
-            random_room_number (bool): If true, the actual number of rooms is
+            random_room_count (bool): If true, the actual number of rooms is
                 sampled uniformly between 1 and num_rooms
             gen_door_obs (bool): If true, generate door observation (currently does not
                 work with random room number)
@@ -316,7 +316,7 @@ class RandomWalls(Module):
     @store_args
     def __init__(self, grid_size, num_rooms, min_room_size, door_size, friction=None,
                  num_tries=10, outside_wall_rgba=(0.6, 1, 0.6, 1.0),
-                 random_room_number=False, gen_door_obs=True, prob_outside_walls=1.0,
+                 random_room_count=False, gen_door_obs=True, prob_outside_walls=1.0,
                  low_outside_walls=False):
         self.door_obs = None
 
@@ -326,7 +326,7 @@ class RandomWalls(Module):
                               use_low_wall_height=self.low_outside_walls)
         failures = 0
 
-        if self.random_room_number:
+        if self.random_room_count:
             self.num_actual_rooms = env._random_state.randint(self.num_rooms) + 1
         else:
             self.num_actual_rooms = self.num_rooms
@@ -350,7 +350,7 @@ class RandomWalls(Module):
             walls = new_walls
 
         if self.gen_door_obs:
-            self.door_obs = construct_door_obs(np.array(doors), floor_size, self.grid_size)
+            self.door_obs = construct_door_obs(jp.array(doors), floor_size, self.grid_size)
 
         print(self.door_obs)
 
