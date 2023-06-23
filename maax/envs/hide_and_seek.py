@@ -9,18 +9,13 @@ from maax.wrappers.util import (ConcatenateObsWrapper,
                                     MaskActionWrapper, SpoofEntityWrapper,
                                     AddConstantObservationsWrapper, MWrapper)
 from maax.wrappers.manipulation import (LockObjWrapper, LockAllWrapper)
-from maax.wrappers.lidar import Lidar
-from maax.wrappers.line_of_sight import (AgentAgentObsMask2D, AgentGeomObsMask2D,
-                                             AgentSiteObsMask2D)
 from maax.wrappers.prep_phase import (PreparationPhase, NoActionsInPrepPhase,
                                           MaskPrepPhaseAction)
 from maax.wrappers.limit_mvmnt import RestrictAgentsRect
 from maax.wrappers.team import TeamMembership
-from maax.wrappers.food import FoodHealthWrapper, AlwaysEatWrapper
 from maax.modules.agents import Agents
 from maax.modules.walls import RandomWalls, WallScenarios
 from maax.modules.objects import Boxes, Ramps
-from maax.modules.food import Food
 from maax.modules.world import FloorAttributes, WorldConstants
 from maax.modules.util import (uniform_placement, proximity_placement,
                                    uniform_placement_middle)

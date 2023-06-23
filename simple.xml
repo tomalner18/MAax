@@ -1,95 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-	<compiler angle="radian" coordinate="local" meshdir="/Users/tom/dev/imperial/FYP/MAax/assets/stls" texturedir="/Users/tom/dev/imperial/FYP/MAax/assets/textures"></compiler>
+	<compiler angle="radian" coordinate="local" meshdir="/Users/tom/dev/imperial/FYP/MAax/assets/stls" autolimits="true"></compiler>
 	<option timestep="0.005">
 		<flag warmstart="enable"></flag>
 	</option>
 	<worldbody>
-		<geom name="floor0" pos="3 3 0" size="3 3 1" type="plane" condim="3" friction="0.2"></geom>
+		<geom name="floor0" pos="3 3 0" size="3 3 1" type="plane" condim="3"></geom>
 		<body name="floor0" pos="3 3 0"></body>
 		<body name="wall0" pos="0.05 2.85 1.5">
-			<joint name="wall0_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall0_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall0" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+			<joint name="wall0_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall0_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall0" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
 		<body name="wall1" pos="2.85 0.05 1.5">
-			<joint name="wall1_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall1_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall1" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+			<joint name="wall1_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall1_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall1" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
 		<body name="wall2" pos="0.05 2.85 1.5">
-			<joint name="wall2_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall2_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall2" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+			<joint name="wall2_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall2_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.05 2.85 1.5" type="box" condim="3" name="wall2" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
 		<body name="wall3" pos="2.85 0.05 1.5">
-			<joint name="wall3_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall3_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall3" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+			<joint name="wall3_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall3_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="2.85 0.05 1.5" type="box" condim="3" name="wall3" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
-		<body name="wall4" pos="0.05 1.15 0.25">
-			<joint name="wall4_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall4_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.05 1.15 0.25" type="box" condim="3" name="wall4" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+		<body name="wall4" pos="0.05 0.75 0.25">
+			<joint name="wall4_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall4_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.05 0.75 0.25" type="box" condim="3" name="wall4" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
-		<body name="wall5" pos="0.75 0.05 0.25">
-			<joint name="wall5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.75 0.05 0.25" type="box" condim="3" name="wall5" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+		<body name="wall5" pos="0.05 0.15 0.25">
+			<joint name="wall5_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall5_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.05 0.15 0.25" type="box" condim="3" name="wall5" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
-		<body name="wall6" pos="0.25 0.05 0.25">
-			<joint name="wall6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<joint name="wall6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0"></joint>
-			<geom size="0.25 0.05 0.25" type="box" condim="3" name="wall6" rgba="0.6 1 0.6 1" group="1" mass="1000000" friction="0.01"></geom>
+		<body name="wall6" pos="0.75 0.05 0.25">
+			<joint name="wall6_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall6_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.75 0.05 0.25" type="box" condim="3" name="wall6" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
+		</body>
+		<body name="wall7" pos="0.05 0.05 0.25">
+			<joint name="wall7_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<joint name="wall7_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto" range="-1.0 1.0"></joint>
+			<geom size="0.05 0.05 0.25" type="box" condim="3" name="wall7" rgba="0.6 1 0.6 1" group="1" mass="10000" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent0_agent0">
-			<joint axis="1 0 0" damping="0.1" name="agent0_slide0" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.1" name="agent0_slide1" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.1" name="agent0_slide2" pos="0 0 0" type="slide"></joint>
+			<joint axis="1 0 0" damping="0.01" name="agent0_slide0" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 1 0" damping="0.01" name="agent0_slide1" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 0 1" damping="0.01" name="agent0_hinge0" pos="0 0 0" type="hinge" limited="auto" range="-100 100"></joint>
 			<geom name="agent0_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent1_agent1">
-			<joint axis="1 0 0" damping="0.1" name="agent1_slide0" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.1" name="agent1_slide1" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.1" name="agent1_slide2" pos="0 0 0" type="slide"></joint>
+			<joint axis="1 0 0" damping="0.01" name="agent1_slide0" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 1 0" damping="0.01" name="agent1_slide1" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 0 1" damping="0.01" name="agent1_hinge0" pos="0 0 0" type="hinge" limited="auto" range="-100 100"></joint>
 			<geom name="agent1_agent" mass="1" pos="0 0 0" rgba="0.258824 0.921569 0.956863 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent2_agent2">
-			<joint axis="1 0 0" damping="0.1" name="agent2_slide0" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.1" name="agent2_slide1" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.1" name="agent2_slide2" pos="0 0 0" type="slide"></joint>
-			<geom name="agent2_agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+			<joint axis="1 0 0" damping="0.01" name="agent2_slide0" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 1 0" damping="0.01" name="agent2_slide1" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 0 1" damping="0.01" name="agent2_hinge0" pos="0 0 0" type="hinge" limited="auto" range="-100 100"></joint>
+			<geom name="agent2_agent" mass="1" pos="0 0 0" rgba="0.941176 0.078431 0.196078 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
 		<body pos="0.15 0.15 0.15" name="agent3_agent3">
-			<joint axis="1 0 0" damping="0.1" name="agent3_slide0" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.1" name="agent3_slide1" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.1" name="agent3_slide2" pos="0 0 0" type="slide"></joint>
-			<geom name="agent3_agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
+			<joint axis="1 0 0" damping="0.01" name="agent3_slide0" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 1 0" damping="0.01" name="agent3_slide1" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 0 1" damping="0.01" name="agent3_hinge0" pos="0 0 0" type="hinge" limited="auto" range="-100 100"></joint>
+			<geom name="agent3_agent" mass="1" pos="0 0 0" rgba="0.941176 0.078431 0.196078 1" size="0.15" type="sphere" euler="1.57 0 0" friction="0.01"></geom>
 		</body>
 		<body name="moveable-box0" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable-box0_free" damping="0.01" pos="0 0 0"></joint>
+			<joint name="moveable-box0_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box0_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box0_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box0" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 		<body name="moveable-box1" pos="0.25 0.25 0.25">
-			<joint type="free" name="moveable-box1_free" damping="0.01" pos="0 0 0"></joint>
+			<joint name="moveable-box1_slide0" axis="1 0 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box1_slide1" axis="0 1 0" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
+			<joint name="moveable-box1_slide2" axis="0 0 1" type="slide" damping="0.01" pos="0 0 0" limited="auto"></joint>
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
-			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" friction="0.01"></geom>
-			<joint type="free" name="ramp0_free" damping="0.001"></joint>
+			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" friction="0.01"></geom>
+			<joint axis="1 0 0" damping="0.1" name="ramp0_slide0" pos="0 0 0" type="slide" limited="auto"></joint>
+			<joint axis="0 1 0" damping="0.1" name="ramp0_slide1" pos="0 0 0" type="slide" limited="auto"></joint>
+			<joint axis="0 0 1" damping="0.1" name="ramp0_hinge0" pos="0 0 0" type="hinge" limited="auto"></joint>
 		</body>
 	</worldbody>
 	<actuator>
 		<motor gear="100" joint="agent0_slide0"></motor>
 		<motor gear="100" joint="agent0_slide1"></motor>
+		<motor gear="100" joint="agent0_hinge0"></motor>
 		<motor gear="100" joint="agent1_slide0"></motor>
 		<motor gear="100" joint="agent1_slide1"></motor>
+		<motor gear="100" joint="agent1_hinge0"></motor>
 		<motor gear="100" joint="agent2_slide0"></motor>
 		<motor gear="100" joint="agent2_slide1"></motor>
+		<motor gear="100" joint="agent2_hinge0"></motor>
 		<motor gear="100" joint="agent3_slide0"></motor>
 		<motor gear="100" joint="agent3_slide1"></motor>
+		<motor gear="100" joint="agent3_hinge0"></motor>
 	</actuator>
 	<asset>
 		<mesh file="ramp.stl" name="ramp0_ramp" scale="0.5 0.5 0.5"></mesh>
+		<material name="ramp0_rampmat" specular="1" shininess="0.3" reflectance="0" rgba="0 0.5 1 1"></material>
 	</asset>
 </mujoco>

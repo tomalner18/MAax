@@ -29,7 +29,7 @@ class Agents(Module):
     '''
     @store_args
     def __init__(self, n_agents, placement_fn=None, color=None, friction=None,
-                 damp_z=False, polar_obs=True, slide=False, arm=True):
+                 damp_z=False, polar_obs=False, slide=False, arm=True):
         pass
 
     def build_step(self, env, floor, floor_size):
@@ -102,6 +102,5 @@ class Agents(Module):
             'agent_q_qd': agent_q_qd,
             'agent_angle': agent_angle,
             'agent_pos': agent_q}
-
         # obs = jp.concatenate(agent_q_qd, agent_angle, agent_q[:, :3])
         return d_obs

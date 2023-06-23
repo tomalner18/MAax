@@ -19,7 +19,7 @@ class Wall:
             rgba (float tuple): wall rgba
             mass (float): wall mass
     '''
-    def __init__(self, pt1, pt2, height=0.5, rgba=(0.6, 1, 0.6, 1.0), mass=10):
+    def __init__(self, pt1, pt2, height=0.5, rgba=(0.6, 1, 0.6, 1.0), mass=10000):
         assert pt1[0] == pt2[0] or pt1[1] == pt2[1], (
             "Currently only horizontal and vertical walls are supported")
         self.is_vertical = pt1[0] == pt2[0]
@@ -375,8 +375,8 @@ class WallScenarios(Module):
                 'empty': no walls
                 'half': one wall in the middle with a random door
                 'quad': one quadrant is walled off with random door(s)
-                'var_quad': same as 'quad' but the room size is also randomized
-                'var_tri': three rooms, one taking about half of the area and the other
+                'quad': same as 'quad' but the room size is also randomized
+                'tri': three rooms, one taking about half of the area and the other
                     two taking about a quarter of the area. Random doors
             friction (float): wall friction
             gen_door_obs (bool): If true, generate door observation (currently does not
@@ -389,14 +389,14 @@ class WallScenarios(Module):
     @store_args
     def __init__(self, grid_size, door_size, scenario, friction=None, gen_door_obs=True, p_door_dropout=0.0,
                  low_outside_walls=False):
-        assert scenario in ['var_quad', 'quad', 'half', 'var_tri', 'empty']
+        assert scenario in ['quad', 'quad', 'half', 'tri', 'empty']
 
     def build_step(self, env, floor, floor_size):
         # Outside walls
         walls = outside_walls(self.grid_size, use_low_wall_height=self.low_outside_walls)
         walls_to_split = []
-        if self.scenario in ['quad', 'var_quad']:
-            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'var_quad' else 0.5
+        if self.scenario in ['quad', 'quad']:
+            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'quad' else 0.5
             q_size = int(q_size * self.grid_size)
             env.metadata['quad_size'] = q_size
             new_walls = [
@@ -411,7 +411,7 @@ class WallScenarios(Module):
         elif self.scenario == 'half':
             walls_to_split += [Wall([self.grid_size - 1, self.grid_size // 2],
                                     [0, self.grid_size // 2])]
-        elif self.scenario == 'var_tri':
+        elif self.scenario == 'tri':
             wall1_splitoff_point, wall2_splitoff_point = [
                 int(self.grid_size * env._random_state.uniform(0.4, 0.6)) for _ in range(2)
             ]

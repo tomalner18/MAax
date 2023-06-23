@@ -12,6 +12,7 @@ def caught(origin_pts, threshold_dist=0.5):
         contact_mask (jp.ndarray): array with shape (n_agents, n_agents) of bools
     '''
     assert isinstance(origin_pts, jp.ndarray)
+    # print(origin_pts.shape)
     assert origin_pts.shape[1] == 2
 
     #Initialise contact mask

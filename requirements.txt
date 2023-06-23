@@ -67,7 +67,7 @@ importlib-resources==5.12.0
     # via orbax-checkpoint
 itsdangerous==2.1.2
     # via flask
-jax==0.4.9
+jax==0.4.8
     # via
     #   -r requirements.in
     #   brax
@@ -76,7 +76,7 @@ jax==0.4.9
     #   jaxopt
     #   optax
     #   orbax-checkpoint
-jaxlib==0.4.10
+jaxlib==0.4.8
     # via
     #   brax
     #   chex

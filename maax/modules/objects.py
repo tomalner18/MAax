@@ -31,15 +31,12 @@ class Boxes(Module):
             boxsize_obs (bool): If true, the size of the boxes is observed (note that the size
                 is still observed if boxsize_obs is False but there are elongated boxes)
             polar_obs (bool): Give observations about rotation in polar coordinates
-            mark_box_corners (bool): If true, puts a site in the middle of each of the 4 vertical
-                box edges for each box (these sites are used for calculating distances in the
-                blueprint construction task).
             free (bool): If true, boxes have free joints. If false, boxes have slide joints
     '''
     @store_args
     def __init__(self, n_boxes, n_elongated_boxes=0, placement_fn=None,
                  box_size=0.5, box_mass=1.0, friction=None, box_only_z_rot=False,
-                 boxid_obs=True, boxsize_obs=False, polar_obs=True, free=True):
+                 boxid_obs=True, boxsize_obs=False, polar_obs=False, free=False):
         if type(n_boxes) not in [tuple, list, np.ndarray]:
             self.n_boxes = [n_boxes, n_boxes]
         if type(n_elongated_boxes) not in [tuple, list, np.ndarray]:
@@ -102,7 +99,7 @@ class Boxes(Module):
 
 
     def observation_step(self, state):
-                # If Free: Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
+        # If Free: Ramps have 7 qs (pos, 1, rot) and 6 qds (vel, angv)
         # If not Free: Ramps have 6 qs (pos, rot) and 7 qds (vel, angv, angv2)
         qs = state.q.copy()
         qds = state.qd.copy()
@@ -157,8 +154,8 @@ class Ramps(Module):
                 ramp observations match the dimensions of elongated box observations.
     '''
     @store_args
-    def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=True,
-                 pad_ramp_size=False, free=True):
+    def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=False,
+                 pad_ramp_size=False, free=False):
         pass
 
     def build_step(self, env, floor, floor_size):

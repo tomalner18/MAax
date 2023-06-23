@@ -1,6 +1,6 @@
 import jax
 from jax import numpy as jp
-from maax.util.vision import insight, in_cone2d, caught
+from maax.util.vision import caught
 from maax.wrappers.util import ObservationWrapper
 
 

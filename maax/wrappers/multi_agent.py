@@ -70,10 +70,10 @@ class SplitObservations(ObservationWrapper):
             # Circulant self keys
             elif k in self.keys_self:
                 new_obs[k + '_self'] = d_obs[k]
-                new_obs[k] = d_obs[k][self._circulant(jp.arange(self.n_agents))]
+                x = self._circulant(jp.arange(self.n_agents))
+                new_obs[k] = d_obs[k][x]
                 new_obs[k] = new_obs[k][:, 1:, :]  # Remove self observation
             elif k in self.keys_copy:
-                print("Copy Key: ", k)
                 new_obs[k] = d_obs[k]
             # Everything else should just get copied for each agent (e.g. external obs)
             else:
@@ -97,7 +97,7 @@ class SplitObservations(ObservationWrapper):
 
     def _circulant(self, c):
         '''
-        Constructs a circulant matrix fopr an input vector c
+        Constructs a circulant matrix for an input vector c
         '''
         n = len(c)
         return jp.column_stack([jp.roll(c, i) for i in range(n)])
