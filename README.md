@@ -14,7 +14,7 @@ pip install -e maax/
 
 
 
-Environment creation begins from the `Base` class. you can then add desired modules to introduce objects to the environment (`Walls`, `Boxes`, `Ramps`).
+Environment creation begins by defining an instance of the `Base` class. From there you can then add desired modules to introduce objects to the environment (`Walls`, `Boxes`, `Ramps`).
 
 For adding environmental mechanics, we recommend implementing a new `Wrapper` inheriting from our custom Wrapper class designed for Multi-agent environments in Brax.
 
