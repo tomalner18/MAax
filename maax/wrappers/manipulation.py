@@ -2,8 +2,8 @@ import gym
 from gym.spaces import Discrete, MultiDiscrete, Tuple
 import numpy as np
 from worldgen.util.rotation import mat2quat
-from mae_envs.wrappers.util import MWrapper
-from mae_envs.util.geometry import dist_pt_to_cuboid
+from maax.wrappers.util import MWrapper
+from maax.util.geometry import dist_pt_to_cuboid
 from copy import deepcopy
 from itertools import compress
 

@@ -1,6 +1,6 @@
 import logging
 from worldgen.transforms import set_geom_attr_transform
-from mae_envs.modules import Module
+from maax.modules import Module
 
 
 class FloorAttributes(Module):

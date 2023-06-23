@@ -1,6 +1,6 @@
 import jax
 from jax import numpy as jp
-from mae_envs.wrappers.util import RewardWrapper
+from maax.wrappers.util import RewardWrapper
 
 
 class RestrictAgentsRect(RewardWrapper):

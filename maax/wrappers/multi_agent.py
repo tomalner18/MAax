@@ -3,7 +3,7 @@ from jax import numpy as jp
 from scipy.linalg import circulant
 from gym.spaces import Tuple, Box, Dict
 from copy import deepcopy
-from mae_envs.wrappers.util import MWrapper, RewardWrapper, ActionWrapper, ObservationWrapper
+from maax.wrappers.util import MWrapper, RewardWrapper, ActionWrapper, ObservationWrapper
 
 
 class SplitMultiAgentActions(ActionWrapper):

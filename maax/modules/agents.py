@@ -4,9 +4,9 @@ from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
                                             qd_idxs_from_joint_prefix)
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
-from mae_envs.util.transforms import (add_weld_equality_constraint_transform,
+from maax.util.transforms import (add_weld_equality_constraint_transform,
                                       set_joint_damping_transform)
-from mae_envs.modules import Module, rejection_placement, get_size_from_xml
+from maax.modules import Module, rejection_placement, get_size_from_xml
 from worldgen import ObjFromXML
 
 import jax
@@ -18,7 +18,7 @@ class Agents(Module):
         Add Agents to the environment.
         Args:
             n_agents (int): number of agents
-            placement_fn (fn or list of fns): See mae_envs.modules.util:rejection_placement for
+            placement_fn (fn or list of fns): See maax.modules.util:rejection_placement for
                 spec. If list of functions, then it is assumed there is one function given
                 per agent
             color (tuple or list of tuples): rgba for agent. If list of tuples, then it is

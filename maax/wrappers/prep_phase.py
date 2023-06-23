@@ -1,7 +1,7 @@
 import jax
 from jax import numpy as jp
 from copy import deepcopy
-from mae_envs.wrappers.util import MWrapper
+from maax.wrappers.util import MWrapper
 
 
 class PreparationPhase(MWrapper):

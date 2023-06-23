@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jp
-from mae_envs.wrappers.util import ObservationWrapper
+from maax.wrappers.util import ObservationWrapper
 
 
 class TeamMembership(ObservationWrapper):

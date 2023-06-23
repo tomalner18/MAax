@@ -5,8 +5,8 @@ from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
 from worldgen import Geom, Material, ObjFromXML
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
-from mae_envs.util.transforms import remove_hinge_axis_transform
-from mae_envs.modules import Module, rejection_placement, get_size_from_xml
+from maax.util.transforms import remove_hinge_axis_transform
+from maax.modules import Module, rejection_placement, get_size_from_xml
 
 import jax
 from jax import numpy as jp
@@ -21,7 +21,7 @@ class Boxes(Module):
             n_elongated_boxes (int or (int, int)): Number of elongated boxes. If tuple of ints,
                 every episode the number of elongated boxes is drawn uniformly from
                 range(n_elongated_boxes[0], min(curr_n_boxes, n_elongated_boxes[1]) + 1)
-            placement_fn (fn or list of fns): See mae_envs.modules.util:rejection_placement for spec
+            placement_fn (fn or list of fns): See maax.modules.util:rejection_placement for spec
                 If list of functions, then it is assumed there is one function given per box
             box_size (float): box size
             box_mass (float): box mass
@@ -149,7 +149,7 @@ class Ramps(Module):
     Add moveable ramps to the environment.
         Args:
             n_ramps (int): number of ramps
-            placement_fn (fn or list of fns): See mae_envs.modules.util:rejection_placement for spec
+            placement_fn (fn or list of fns): See maax.modules.util:rejection_placement for spec
                 If list of functions, then it is assumed there is one function given per ramp
             friction (float): ramp friction
             polar_obs (bool): Give observations about rotation in polar coordinates

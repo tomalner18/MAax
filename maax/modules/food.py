@@ -1,6 +1,6 @@
 import numpy as np
 from worldgen.util.types import store_args
-from mae_envs.modules import Module, rejection_placement
+from maax.modules import Module, rejection_placement
 
 
 class Food(Module):
@@ -10,7 +10,7 @@ class Food(Module):
             n_food (int or (int, int)): number of food items. If tuple of ints, every episode the
                 number of food items is drawn uniformly from range(n_food[0], n_food[1] + 1)
             food_size (float): (visual) size of food items
-            placement_fn (fn or list of fns): See mae_envs.modules.util:rejection_placement for spec
+            placement_fn (fn or list of fns): See maax.modules.util:rejection_placement for spec
                 If list of functions, then it is assumed there is one function given per food site
     '''
     @store_args

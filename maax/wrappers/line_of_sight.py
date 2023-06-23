@@ -1,7 +1,7 @@
 import jax
 from jax import numpy as jp
-from mae_envs.util.vision import insight, in_cone2d, caught
-from mae_envs.wrappers.util import ObservationWrapper
+from maax.util.vision import insight, in_cone2d, caught
+from maax.wrappers.util import ObservationWrapper
 
 
 class AgentAgentContactMask2D(ObservationWrapper):

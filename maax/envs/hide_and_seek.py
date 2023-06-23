@@ -3,26 +3,26 @@ import numpy as np
 from jax import numpy as jp
 from copy import deepcopy
 from maax.envs.base import Base
-from mae_envs.wrappers.multi_agent import (SplitMultiAgentActions,
+from maax.wrappers.multi_agent import (SplitMultiAgentActions,
                                            SplitObservations, SelectObsWrapper)
-from mae_envs.wrappers.util import (ConcatenateObsWrapper,
+from maax.wrappers.util import (ConcatenateObsWrapper,
                                     MaskActionWrapper, SpoofEntityWrapper,
                                     AddConstantObservationsWrapper, MWrapper)
-from mae_envs.wrappers.manipulation import (LockObjWrapper, LockAllWrapper)
-from mae_envs.wrappers.lidar import Lidar
-from mae_envs.wrappers.line_of_sight import (AgentAgentObsMask2D, AgentGeomObsMask2D,
+from maax.wrappers.manipulation import (LockObjWrapper, LockAllWrapper)
+from maax.wrappers.lidar import Lidar
+from maax.wrappers.line_of_sight import (AgentAgentObsMask2D, AgentGeomObsMask2D,
                                              AgentSiteObsMask2D)
-from mae_envs.wrappers.prep_phase import (PreparationPhase, NoActionsInPrepPhase,
+from maax.wrappers.prep_phase import (PreparationPhase, NoActionsInPrepPhase,
                                           MaskPrepPhaseAction)
-from mae_envs.wrappers.limit_mvmnt import RestrictAgentsRect
-from mae_envs.wrappers.team import TeamMembership
-from mae_envs.wrappers.food import FoodHealthWrapper, AlwaysEatWrapper
-from mae_envs.modules.agents import Agents
-from mae_envs.modules.walls import RandomWalls, WallScenarios
-from mae_envs.modules.objects import Boxes, Ramps
-from mae_envs.modules.food import Food
-from mae_envs.modules.world import FloorAttributes, WorldConstants
-from mae_envs.modules.util import (uniform_placement, proximity_placement,
+from maax.wrappers.limit_mvmnt import RestrictAgentsRect
+from maax.wrappers.team import TeamMembership
+from maax.wrappers.food import FoodHealthWrapper, AlwaysEatWrapper
+from maax.modules.agents import Agents
+from maax.modules.walls import RandomWalls, WallScenarios
+from maax.modules.objects import Boxes, Ramps
+from maax.modules.food import Food
+from maax.modules.world import FloorAttributes, WorldConstants
+from maax.modules.util import (uniform_placement, proximity_placement,
                                    uniform_placement_middle)
 
 

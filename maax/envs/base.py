@@ -18,9 +18,9 @@ import jax
 import jax.numpy as jp
 
 from worldgen import Floor, WorldBuilder, WorldParams
-from mae_envs.modules.agents import Agents
-from mae_envs.modules.walls import RandomWalls
-from mae_envs.modules.objects import Boxes, Ramps
+from maax.modules.agents import Agents
+from maax.modules.walls import RandomWalls
+from maax.modules.objects import Boxes, Ramps
 
 
 
