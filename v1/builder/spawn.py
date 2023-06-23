@@ -19,11 +19,10 @@ class Spawner:
 
         if method == "poisson":
             points = self.distributer.poisson_distribute(key, obj_max_width / 2, separation, (-int(space_dim[0] / 2), int(space_dim[0] / 2)), (-int(space_dim[1] / 2), int(space_dim[1] / 2)))
-            print(points)
         elif method == "unseparated":
             points = self.distributer.random_unseparated(key, 10, 1, (-int(space_dim[0] / 2), int(space_dim[0] / 2)), (-int(space_dim[1] / 2), int(space_dim[1] / 2)))
         elif method == "separated":
-            points = self.distributer.random_separated(key, obj_cnt=10, obj_width=1, separation=5, width_range=(-int(space_dim[0] / 2), int(space_dim[0] / 2)), height_range=(-int(space_dim[1] / 2), int(space_dim[1] / 2)))
+            points = self.distributer.random_separated(key, obj_cnt=10, obj_width=1, separation=3, width_range=(-int(space_dim[0] / 2), int(space_dim[0] / 2)), height_range=(-int(space_dim[1] / 2), int(space_dim[1] / 2)))
 
 
         objects = self.builder.build(points, obj_type)
@@ -107,6 +106,8 @@ class Spawner:
             qp.pos.y = boundary.pos[1]
             # qp.pos.z = boundary.half_size[2] * 2
             qp.pos.z = 2
+            
+        return len(points) + len(boundary_points)
 
         
 

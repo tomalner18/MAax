@@ -63,12 +63,12 @@ class Distributer:
         A list of tuples containing the (x, y) coordinates of the spawned objects.
         """
         objects = []
-        attempt_threshold = 5
+        attempt_threshold = 100
         for i in range(obj_cnt):
             attempts = 0
             while attempts < attempt_threshold:
-                x = random.randint(0, width_range - obj_width)
-                y = random.randint(0, height_range - obj_width)
+                x = random.randint(width_range[0] + obj_width, width_range[1] - obj_width)
+                y = random.randint(height_range[0] + obj_width, height_range[1] - obj_width)
                 obj = (x, y, obj_width)
                 if not any(self.check_overlap(obj, other, separation) for other in objects):
                     objects.append(obj)

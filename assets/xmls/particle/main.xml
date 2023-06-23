@@ -3,9 +3,9 @@
 	<option timestep="0.005"/>
 	<worldbody>
 		<body pos="0.15 0.15 0.15">
-			<joint axis="1 0 0" damping="0.01" name="slide0" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 1 0" damping="0.01" name="slide1" pos="0 0 0" type="slide"></joint>
-			<joint axis="0 0 1" damping="0.01" name="hinge0" pos="0 0 0" type="hinge"></joint>
+			<joint axis="1 0 0" damping="0.01" name="slide0" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 1 0" damping="0.01" name="slide1" pos="0 0 0" type="slide" limited="auto" range="-100 100"></joint>
+			<joint axis="0 0 1" damping="0.01" name="hinge0" pos="0 0 0" type="hinge" limited="auto" range="-100 100"></joint>
 			<geom name="agent" mass="1" pos="0 0 0" rgba="1 0 0 1" size="0.15" type="sphere" euler="1.57 0 0"></geom>
 		</body>
 		<body name="annotation:outer_bound" pos="0.15 0.15 0.15">

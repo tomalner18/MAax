@@ -18,9 +18,9 @@ import jax
 import jax.numpy as jp
 
 from worldgen import Floor, WorldBuilder, WorldParams
-from mae_envs.modules.agents import Agents
-from mae_envs.modules.walls import RandomWalls
-from mae_envs.modules.objects import Boxes, Ramps
+from maax.modules.agents import Agents
+from maax.modules.walls import RandomWalls
+from maax.modules.objects import Boxes, Ramps
 
 
 
@@ -220,9 +220,8 @@ class Base(PipelineEnv):
 
     def reset(self, rng: jp.ndarray) -> State:
         """Resets the environment to an initial state."""
-        # init_q = jp.asarray(list(init_dict.values()))
+
         init_q = jp.hstack(list(self.init_dict.values()))
-        # print('Init from joint positions: ', init_q)
         init_qd = jp.zeros(self.sys.qd_size())
 
         pipeline_state = self.pipeline_init(self.init_q, self.init_qd)
@@ -246,7 +245,6 @@ class Base(PipelineEnv):
         pipeline_state = self.pipeline_step(pipeline_state0, jp.ravel(action))
 
         d_obs = self._get_d_obs(pipeline_state)
-        print('d_obs: ', d_obs)
         obs = self._concat_obs(d_obs)
 
         step = state.step + 1
