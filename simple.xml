@@ -84,7 +84,7 @@
 			<geom size="0.25 0.25 0.25" type="box" condim="3" name="moveable-box1" rgba="1 0.5 0.8 1" mass="1" friction="0.2"></geom>
 		</body>
 		<body pos="0.25 0.25 0.25" name="ramp0_ramp0">
-			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" friction="0.01"></geom>
+			<geom name="ramp0_ramp" pos="0 0 0" type="mesh" mesh="ramp0_ramp" mass="1" rgba="1 1 0.5 1" friction="0.01"></geom>
 			<joint axis="1 0 0" damping="0.1" name="ramp0_slide0" pos="0 0 0" type="slide" limited="auto"></joint>
 			<joint axis="0 1 0" damping="0.1" name="ramp0_slide1" pos="0 0 0" type="slide" limited="auto"></joint>
 			<joint axis="0 0 1" damping="0.1" name="ramp0_hinge0" pos="0 0 0" type="hinge" limited="auto"></joint>
@@ -106,6 +106,5 @@
 	</actuator>
 	<asset>
 		<mesh file="ramp.stl" name="ramp0_ramp" scale="0.5 0.5 0.5"></mesh>
-		<material name="ramp0_rampmat" specular="1" shininess="0.3" reflectance="0" rgba="0 0.5 1 1"></material>
 	</asset>
 </mujoco>
