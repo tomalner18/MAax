@@ -33,7 +33,6 @@ class WorldBuilder(Obj):
         compiler['@angle'] = 'radian'
         compiler['@coordinate'] = 'local'
         compiler['@meshdir'] = worldgen_path('assets/stls')
-        compiler['@texturedir'] = worldgen_path('assets/textures')
         compiler['@autolimits'] = "true"
         option = OrderedDict()
         option["flag"] = OrderedDict([("@warmstart", "enable")])

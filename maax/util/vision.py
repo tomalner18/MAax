@@ -58,31 +58,3 @@ def in_cone2d(origin_pts, origin_angles, cone_angle, target_pts):
     angle_between[jp.isnan(angle_between)] = 0.
 
     return jp.abs(normalize_angles(angle_between)) <= cone_angle
-
-
-def insight(sim, geom1_id, geom2_id=None, pt2=None, dist_thresh=jp.inf, check_body=True):
-    '''
-        Check if geom2 or pt2 is in line of sight of geom1.
-        Args:
-            sim: Mujoco sim object
-            geom1 (int): geom id
-            geom2 (int): geom id
-            pt2 (tuple): xy point
-            dist_thresh (float): Adds a distance threshold for vision. Objects beyond the threshold
-                are considered out of sight.
-            check_body (bool): Check whether the raycast hit any geom in the body that geom2 is in
-                rather than if it just hit geom2
-    '''
-    dist, collision_geom = raycast(sim, geom1_id, geom2_id=geom2_id, pt2=pt2)
-    if geom2_id is not None:
-        if check_body:
-            body2_id, collision_body_id = sim.model.geom_bodyid[[geom2_id, collision_geom]]
-            return (collision_body_id == body2_id and dist < dist_thresh)
-        else:
-            return (collision_geom == geom2_id and dist < dist_thresh)
-    else:
-        pt1 = sim.data.geom_xpos[geom1_id]
-        dist_pt2 = jp.linalg.norm(pt2 - pt1)
-        # if dist == -1 then we're raycasting from a geom to a point within itself,
-        #   and all objects have line of sight of themselves.
-        return (dist == -1.0 or dist > dist_pt2) and dist_pt2 < dist_thresh
