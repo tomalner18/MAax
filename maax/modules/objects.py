@@ -71,13 +71,13 @@ class Boxes(Module):
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))
             if self.box_only_z_rot:
-                geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
-                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
-            else:
-
                 geom.add_transform(remove_slide_axis_transform(np.array([0.0, 0.0, 1.0])))
                 geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
                 geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+            else:
+                geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
+                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 0.0, 1.0])))
 
             if self.placement_fn is not None:
                 _placement_fn = (self.placement_fn[i]

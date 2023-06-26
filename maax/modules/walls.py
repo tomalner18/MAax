@@ -375,7 +375,7 @@ class WallScenarios(Module):
                 'empty': no walls
                 'half': one wall in the middle with a random door
                 'quad': one quadrant is walled off with random door(s)
-                'quad': same as 'quad' but the room size is also randomized
+                'var_quad': same as 'quad' but the room size is also randomized
                 'tri': three rooms, one taking about half of the area and the other
                     two taking about a quarter of the area. Random doors
             friction (float): wall friction
@@ -389,14 +389,14 @@ class WallScenarios(Module):
     @store_args
     def __init__(self, grid_size, door_size, scenario, friction=None, gen_door_obs=True, p_door_dropout=0.0,
                  low_outside_walls=False):
-        assert scenario in ['quad', 'quad', 'half', 'tri', 'empty']
+        assert scenario in ['quad', 'var_quad', 'half', 'tri', 'empty']
 
     def build_step(self, env, floor, floor_size):
         # Outside walls
         walls = outside_walls(self.grid_size, use_low_wall_height=self.low_outside_walls)
         walls_to_split = []
-        if self.scenario in ['quad', 'quad']:
-            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'quad' else 0.5
+        if self.scenario in ['quad', 'var_quad']:
+            q_size = env._random_state.uniform(0.3, 0.6) if self.scenario == 'var_quad' else 0.5
             q_size = int(q_size * self.grid_size)
             env.metadata['quad_size'] = q_size
             new_walls = [
