@@ -5,7 +5,7 @@ from worldgen.util.sim_funcs import (q_idxs_from_joint_prefix,
 from worldgen import Geom, Material, ObjFromXML
 from worldgen.transforms import set_geom_attr_transform
 from worldgen.util.rotation import normalize_angles
-from maax.util.transforms import remove_hinge_axis_transform
+from maax.util.transforms import remove_hinge_axis_transform, remove_slide_axis_transform
 from maax.modules import Module, rejection_placement, get_size_from_xml
 
 import jax
@@ -70,12 +70,14 @@ class Boxes(Module):
             geom.add_transform(set_geom_attr_transform('mass', self.box_mass))
             if self.friction is not None:
                 geom.add_transform(set_geom_attr_transform('friction', self.friction))
-            # if self.box_only_z_rot:
-            #     geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
-            #     geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
-            geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
-            geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
-            geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 0.0, 1.0])))
+            if self.box_only_z_rot:
+                geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
+                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
+            else:
+
+                geom.add_transform(remove_slide_axis_transform(np.array([0.0, 0.0, 1.0])))
+                geom.add_transform(remove_hinge_axis_transform(np.array([1.0, 0.0, 0.0])))
+                geom.add_transform(remove_hinge_axis_transform(np.array([0.0, 1.0, 0.0])))
 
             if self.placement_fn is not None:
                 _placement_fn = (self.placement_fn[i]

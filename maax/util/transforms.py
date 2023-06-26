@@ -47,3 +47,14 @@ def remove_hinge_axis_transform(axis):
                                  or np.linalg.norm(j["@axis"] - axis) >= 1e-5]
         return closure_transform(closure)(xml_dict)
     return fun
+
+def remove_slide_axis_transform(axis):
+    ''' Removes specific slide axis from the body. '''
+    def fun(xml_dict):
+        def closure(node):
+            if 'joint' in node:
+                node["joint"] = [j for j in node["joint"]
+                                 if j["@type"] != "slide"
+                                 or np.linalg.norm(j["@axis"] - axis) >= 1e-5]
+        return closure_transform(closure)(xml_dict)
+    return fun
