@@ -157,7 +157,7 @@ class Ramps(Module):
     '''
     @store_args
     def __init__(self, n_ramps, placement_fn=None, friction=None, polar_obs=False,
-                 pad_ramp_size=False, free=False):
+                 pad_ramp_size=False, free=True):
         pass
 
     def build_step(self, env, floor, floor_size):
